@@ -1,0 +1,3 @@
+Swiss Ephemeris Configuration
+Using built-in approximations
+Suitable for most astrological calculations
