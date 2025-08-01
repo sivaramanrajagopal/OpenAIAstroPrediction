@@ -11,7 +11,7 @@ print("INSTALLED PACKAGES:")
 print(result.stdout)
 print("PIP LIST ERROR (if any):")
 print(result.stderr)
-print("=== Now trying to import swisseph... ===")
+print("=== Now trying to import pyswisseph... ===")
 
 # Debug: List all installed packages via pkg_resources
 import pkg_resources
@@ -23,7 +23,7 @@ swisseph_packages = [p for p in installed_packages if 'swisseph' in p.lower()]
 print(f"Swisseph packages found: {swisseph_packages}")
 print("=== End DEBUG ===")
 
-import swisseph as swe
+import pyswisseph as swe
 import logging
 import os
 from dotenv import load_dotenv
