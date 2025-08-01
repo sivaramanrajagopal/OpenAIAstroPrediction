@@ -1,6 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
+
+# Debug: List all installed packages
+import pkg_resources
+print("=== DEBUG: Installed packages ===")
+installed_packages = [p.project_name for p in pkg_resources.working_set]
+print(installed_packages)
+print("=== Looking for swisseph/pyswisseph ===")
+swisseph_packages = [p for p in installed_packages if 'swisseph' in p.lower()]
+print(f"Swisseph packages found: {swisseph_packages}")
+print("=== End DEBUG ===")
+
 import swisseph as swe
 import logging
 import os
