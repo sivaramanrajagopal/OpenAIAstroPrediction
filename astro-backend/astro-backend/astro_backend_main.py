@@ -2,9 +2,20 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
 
-# Debug: List all installed packages
+# Debug: Check what packages are actually installed
+import subprocess
+import sys
+print("=== RAILWAY DEBUG: Checking installed packages ===")
+result = subprocess.run([sys.executable, '-m', 'pip', 'list'], capture_output=True, text=True)
+print("INSTALLED PACKAGES:")
+print(result.stdout)
+print("PIP LIST ERROR (if any):")
+print(result.stderr)
+print("=== Now trying to import swisseph... ===")
+
+# Debug: List all installed packages via pkg_resources
 import pkg_resources
-print("=== DEBUG: Installed packages ===")
+print("=== DEBUG: Installed packages via pkg_resources ===")
 installed_packages = [p.project_name for p in pkg_resources.working_set]
 print(installed_packages)
 print("=== Looking for swisseph/pyswisseph ===")
