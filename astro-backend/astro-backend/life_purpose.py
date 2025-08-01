@@ -1,11 +1,11 @@
-import pyswisseph as swe
+import swisseph as swe
 import datetime
-from openai import OpenAI
+import openai
 import os
 
 # --- OPENAI CONFIG ---
 # Load API key from environment variable for security
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- CONSTANTS ---
 rasis = [
@@ -161,7 +161,7 @@ def generate_purpose_report(analysis, data):
 
 def ask_gpt(prompt):
     try:
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You're a wise Vedic astrologer."},

@@ -1,12 +1,12 @@
-import pyswisseph as swe
+import swisseph as swe
 import datetime
 import os
-from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 
 # --- CONFIGURE OPENAI ---
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- CONSTANTS ---
 rasis = [

@@ -1,10 +1,10 @@
-import pyswisseph as swe
+import swisseph as swe
 import datetime
-from openai import OpenAI
+import openai
 import os
 
 # --- CONFIGURE OPENAI ---
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- CONSTANTS ---
 rasis = [
@@ -108,7 +108,7 @@ def generate_report(analysis):
 
 def ask_gpt_spouse(prompt):
     try:
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[
                 {"role": "system", "content": "You are an expert Vedic astrologer specializing in marriage and spouse prediction."},

@@ -1,4 +1,4 @@
-import pyswisseph as swe
+import swisseph as swe
 import datetime
 from collections import OrderedDict
 

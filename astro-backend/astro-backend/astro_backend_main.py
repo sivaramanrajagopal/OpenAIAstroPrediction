@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
-import pyswisseph as swe
+import swisseph as swe
 import logging
 import os
 from dotenv import load_dotenv

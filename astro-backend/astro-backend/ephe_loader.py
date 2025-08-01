@@ -1,6 +1,6 @@
 import os
 import urllib.request
-import pyswisseph as swe
+import swisseph as swe
 
 # Correct URLs for ephemeris files
 EPHE_FILES = {

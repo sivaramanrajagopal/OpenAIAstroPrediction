@@ -1,12 +1,12 @@
-import pyswisseph as swe
+import swisseph as swe
 import datetime
 import os
-from openai import OpenAI
+import openai
 from dotenv import load_dotenv
 
 # --- Load OpenAI Key ---
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- Setup Swiss Ephemeris ---
 swe.set_ephe_path('./ephe')  # Use current directory for ephemeris files
@@ -108,14 +108,14 @@ def generate_gpt_prompt(data):
 # --- Get GPT Interpretation ---
 def get_astrology_interpretation(prompt_text):
     try:
-        response = client.chat.completions.create(model="gpt-3.5-turbo",
-                                                  messages=[{
-                                                      "role":
-                                                      "user",
-                                                      "content":
-                                                      prompt_text
-                                                  }],
-                                                  temperature=0.7)
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[{
+                "role": "user",
+                "content": prompt_text
+            }],
+            temperature=0.7
+        )
         return response.choices[0].message.content
     except Exception as e:
         return f"Error from OpenAI: {e}"

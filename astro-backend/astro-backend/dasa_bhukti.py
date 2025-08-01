@@ -1,11 +1,11 @@
-import pyswisseph as swe
+import swisseph as swe
 import datetime
 from collections import OrderedDict
-from openai import OpenAI
+import openai
 import os
 
 # --- Load OpenAI API Key ---
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- CONSTANTS ---
 nakshatras = [
@@ -159,7 +159,7 @@ def ask_gpt_dasa_prediction(birth_info, dasa_table, planet_data):
     3. Spiritual guidance and remedies.
     """
     try:
-        response = client.chat.completions.create(
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
