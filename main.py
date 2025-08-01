@@ -5,7 +5,7 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'astro-backend', 'astro-backend'))
 
 # Import and run the FastAPI app
-from main import app
+from astro_backend_main import app
 
 if __name__ == "__main__":
     import uvicorn
