@@ -6,7 +6,7 @@ Example:
   python yogas.py 29.10.1977 21:30 13.08 80.28 5.5
 """
 
-import swisseph as swe
+import pyswisseph as swe
 import datetime
 import sys
 

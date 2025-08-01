@@ -1,4 +1,4 @@
-import swisseph as swe
+import pyswisseph as swe
 import datetime
 import os
 from openai import OpenAI

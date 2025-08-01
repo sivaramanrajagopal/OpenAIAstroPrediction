@@ -1,4 +1,4 @@
-import swisseph as swe
+import pyswisseph as swe
 import datetime
 from collections import OrderedDict
 from openai import OpenAI
