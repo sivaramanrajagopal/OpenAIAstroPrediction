@@ -1,8 +1,11 @@
 import sys
 import os
 
-# Add the astro-backend/astro-backend directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'astro-backend', 'astro-backend'))
+# Change to the correct directory where the Python files are located
+os.chdir(os.path.join(os.path.dirname(__file__), 'astro-backend', 'astro-backend'))
+
+# Add the current directory to Python path
+sys.path.insert(0, os.getcwd())
 
 # Import and run the FastAPI app
 from astro_backend_main import app
