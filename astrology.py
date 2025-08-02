@@ -1,4 +1,10 @@
-import pyswisseph as swe
+try:
+    import pyswisseph as swe
+    swe.set_ephe_path('')  # Use built-in ephemeris
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
+except ImportError:
+    print("Warning: pyswisseph not available")
+    swe = None
 import datetime
 import os
 import openai

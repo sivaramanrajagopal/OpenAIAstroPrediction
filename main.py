@@ -22,6 +22,7 @@ try:
 except ImportError as e:
     print(f"❌ PySwisseph import failed: {e}")
     PYSWISSEPH_AVAILABLE = False
+    swe = None
 
 # Import your modules
 from astrology import get_planet_positions, generate_gpt_prompt, get_astrology_interpretation
