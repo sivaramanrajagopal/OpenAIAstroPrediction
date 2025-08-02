@@ -200,6 +200,7 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
 
 if __name__ == "__main__":
     import uvicorn
+    import os
     port = int(os.environ.get("PORT", 8000))
+    print(f"Starting server on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
-# Force Railway redeploy - Sat Aug  2 10:59:26 IST 2025
