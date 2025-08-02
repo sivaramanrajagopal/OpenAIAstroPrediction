@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Get port from environment variable (Railway uses $PORT)
+PORT = int(os.environ.get('PORT', 8000))
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
