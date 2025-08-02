@@ -38,7 +38,7 @@ direction_map = {
     9: "South-West", 10: "South", 11: "South", 12: "South-East"
 }
 
-swe.set_ephe_path('./ephe')
+swe.set_ephe_path('')
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- FUNCTIONS ---

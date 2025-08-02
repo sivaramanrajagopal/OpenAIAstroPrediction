@@ -33,11 +33,10 @@ def download_ephe_files():
 
 def setup_swiss_ephemeris():
     """
-    Sets up Swiss Ephemeris with correct path.
+    Sets up Swiss Ephemeris with default path.
     """
-    ephe_dir = download_ephe_files()
-    swe.set_ephe_path(ephe_dir)
-    print(f"Swiss Ephemeris path set to: {ephe_dir}")
+    swe.set_ephe_path('')
+    print("Swiss Ephemeris path set to default")
 
 
 # Automatically set up Swiss Ephemeris when imported

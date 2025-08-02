@@ -76,7 +76,7 @@ nakshatra_purposes = {
 }
 
 # --- SWISS EPHEMERIS INIT ---
-swe.set_ephe_path('.')
+swe.set_ephe_path('')
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- HELPER FUNCTIONS ---
