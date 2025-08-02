@@ -1,0 +1,6 @@
+astro-frontend/
+astro-backend/
+__pycache__/
+*.pyc
+.git/
+README.md 

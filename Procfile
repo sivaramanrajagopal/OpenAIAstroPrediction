@@ -1,1 +1,1 @@
-web: /opt/venv/bin/python -m uvicorn astro_backend_main:app --host 0.0.0.0 --port $PORT 
+web: python -m uvicorn main:app --host 0.0.0.0 --port $PORT 
