@@ -73,8 +73,7 @@ sign_careers = {
     "Meena": ["Spirituality", "Pharmacy", "Creative Arts", "Charity"]
 }
 
-swe.set_ephe_path('')
-swe.set_sid_mode(swe.SIDM_LAHIRI)
+# All swe calls are now inside the try block above
 
 
 # --- FUNCTIONS ---

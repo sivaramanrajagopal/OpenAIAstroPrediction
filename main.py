@@ -111,7 +111,12 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     
     try:
         data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
-        dasa_table = generate_dasa_table(data)
+        # Calculate Julian Day and Moon longitude for dasa
+        local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
+        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+        jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
+        moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
+        dasa_table = generate_dasa_table(jd, moon_longitude)
         return {"dasa_table": dasa_table}
     except Exception as e:
         logger.error(f"Error in dasa endpoint: {str(e)}")
@@ -151,7 +156,12 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
     
     try:
         data, asc_deg, cusps = get_dasa_positions(dob, tob, lat, lon, tz_offset)
-        dasa_table = generate_dasa_bhukti_table(data)
+        # Calculate Julian Day and Moon longitude for dasa bhukti
+        local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
+        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+        jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
+        moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
+        dasa_table = generate_dasa_bhukti_table(jd, moon_longitude)
         return {"dasa_bhukti_table": dasa_table}
     except Exception as e:
         logger.error(f"Error in dasa_bhukti endpoint: {str(e)}")
@@ -164,8 +174,8 @@ def spouse(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, g
     
     try:
         data, asc_deg, cusps = get_spouse_positions(dob, tob, lat, lon, tz_offset)
-        aspects = get_spouse_aspects(data)
-        analysis = analyze_marriage(data, aspects, gender)
+        aspects = get_spouse_aspects(data, asc_deg)
+        analysis = analyze_marriage(data, asc_deg, aspects, gender)
         report = spouse_report(analysis)
         return {"analysis": analysis, "report": report}
     except Exception as e:
@@ -179,7 +189,7 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
     
     try:
         data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
-        indu_dasa_data = get_indu_dasa(data)
+        indu_dasa_data = get_indu_dasa(dob, tob, lat, lon, tz_offset)
         return {"indu_dasa": indu_dasa_data}
     except Exception as e:
         logger.error(f"Error in indu_dasa endpoint: {str(e)}")

@@ -19,8 +19,7 @@ import datetime
 import sys
 
 # --- Setup Swiss Ephemeris ---
-swe.set_ephe_path('')
-swe.set_sid_mode(swe.SIDM_LAHIRI)
+# All swe calls are now inside the try block above
 
 rasis = [
     "Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni",

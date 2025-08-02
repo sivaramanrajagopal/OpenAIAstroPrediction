@@ -17,8 +17,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- Setup Swiss Ephemeris ---
-swe.set_ephe_path('')  # Use default ephemeris path
-swe.set_sid_mode(swe.SIDM_LAHIRI)  # Lahiri ayanamsa (Vedic)
+# All swe calls are now inside the try block above
 
 # --- Nakshatras & Rasis ---
 nakshatras = [
