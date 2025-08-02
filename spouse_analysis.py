@@ -1,10 +1,12 @@
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 import openai
 import os
@@ -58,6 +60,9 @@ def get_chart_info(longitude, speed=None):
     }
 
 def get_planet_positions(jd, lat, lon):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
     swe.set_topo(lon, lat, 0)
@@ -86,6 +91,9 @@ def get_aspects(data, asc_deg):
     return house_aspects
 
 def analyze_marriage(data, asc_deg, aspects, gender):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     lagna_rasi = data['Ascendant']['rasi']
     rasi_seq = rasis[rasis.index(lagna_rasi):] + rasis[:rasis.index(lagna_rasi)]
     seventh_rasi = rasi_seq[6]

@@ -1,10 +1,12 @@
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 import openai
 import os
@@ -97,6 +99,9 @@ def get_chart_info(longitude, speed=None):
     }
 
 def get_planet_positions(jd, lat, lon):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
     swe.set_topo(lon, lat, 0)
@@ -124,6 +129,9 @@ def get_house_from_longitude(longitude, asc_deg):
     return (planet_rasi - lagna_rasi) % 12 + 1
 
 def analyze_life_purpose(data, asc_deg, cusps):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     purpose_houses = {1: cusps[0], 5: cusps[4], 9: cusps[8], 10: cusps[9], 12: cusps[11]}
     house_lords = {}
     for house_num, house_deg in purpose_houses.items():

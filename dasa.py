@@ -1,10 +1,12 @@
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 from collections import OrderedDict
 
@@ -75,6 +77,9 @@ def generate_dasa_table(jd, moon_longitude, total_years=120):
     - Pada
     - List of Dasa periods (each as a dict)
     """
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     nakshatra, pada, current_dasa_lord, remaining_years = calculate_dasa_start(moon_longitude)
 
     # Initialize timeline

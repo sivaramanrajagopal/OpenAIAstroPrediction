@@ -8,11 +8,13 @@ Example:
 
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 import sys
 
@@ -43,6 +45,9 @@ def get_chart_info(longitude, speed=None):
     }
 
 def get_planet_positions(dob, tob, lat, lon, tz_offset):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
     utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
@@ -71,6 +76,9 @@ def get_lagna_houses(asc_index):
     return [(asc_index + i) % 12 + 1 for i in range(12)]
 
 def detect_yogas(data):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     yogas = []
     rasi = {p: data[p]['rasi'] for p in data}
     houses = {p: int(data[p]['longitude'] // 30) + 1 for p in data}

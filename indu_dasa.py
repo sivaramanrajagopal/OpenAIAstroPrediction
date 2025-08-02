@@ -1,10 +1,12 @@
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 from collections import OrderedDict
 
@@ -65,6 +67,9 @@ def get_chart_info(longitude, speed=None):
     }
 
 def get_planet_positions(jd, lat, lon):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     flags = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
     swe.set_topo(lon, lat, 0)
@@ -94,6 +99,9 @@ def find_planets_in_rasi(planet_positions, target_rasi):
     return [planet for planet, details in planet_positions.items() if details.get('rasi') == target_rasi]
 
 def generate_dasa_table(jd, moon_longitude, years=90):
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     nak_index = int((moon_longitude % 360) // (360 / 27))
     nak_lord = nakshatra_lords[nak_index]
     portion_completed = (moon_longitude % (360 / 27)) / (360 / 27)

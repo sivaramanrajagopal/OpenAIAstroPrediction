@@ -1,10 +1,12 @@
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 import os
 import openai
@@ -53,6 +55,9 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     Returns planetary positions along with Ascendant and house cusps.
     Output: data (dict), ascendant_degree (float), cusps (list)
     """
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     print(f"DEBUG: get_planet_positions called with lat={lat}, lon={lon}, tz_offset={tz_offset}")
     local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
     utc_dt = local_dt - datetime.timedelta(hours=tz_offset)

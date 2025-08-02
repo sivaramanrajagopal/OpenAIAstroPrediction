@@ -1,10 +1,12 @@
 try:
     import pyswisseph as swe
-    swe.set_ephe_path('')  # Use built-in ephemeris
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
+    swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
     swe = None
+    PYSWISSEPH_AVAILABLE = False
 import datetime
 from collections import OrderedDict
 import openai
@@ -59,6 +61,9 @@ def get_chart_info(longitude, speed=None):
 
 def get_planet_positions(jd, lat, lon):
     """Return planetary positions for given Julian Day."""
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
     swe.set_topo(lon, lat, 0)
@@ -109,6 +114,9 @@ def calculate_dasa_start(moon_longitude):
 
 def generate_dasa_table(jd, moon_longitude, total_years=120):
     """Generate full Vimshottari Dasa table."""
+    if not PYSWISSEPH_AVAILABLE:
+        raise ImportError("PySwisseph is not available")
+    
     nakshatra, pada, current_dasa_lord, remaining_years = calculate_dasa_start(moon_longitude)
     start_year, start_month, start_day = swe.revjul(jd)[:3]
     start_date = datetime.datetime(start_year, start_month, start_day)
