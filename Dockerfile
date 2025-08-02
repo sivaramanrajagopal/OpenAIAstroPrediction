@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose port
-EXPOSE $PORT
+EXPOSE ${PORT:-8000}
 
 # Start the application
-CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "$PORT"] 
+CMD python -m uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} 
