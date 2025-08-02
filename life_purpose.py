@@ -2,9 +2,22 @@ try:
     import pyswisseph as swe
     swe.set_ephe_path('')  # Use built-in ephemeris - INSIDE the try block
     swe.set_sid_mode(swe.SIDM_LAHIRI)  # INSIDE the try block
+    
+    # Define constants INSIDE the try block
+    planet_ids = {
+        "Sun": swe.SUN, "Moon": swe.MOON, "Mercury": swe.MERCURY,
+        "Venus": swe.VENUS, "Mars": swe.MARS, "Jupiter": swe.JUPITER,
+        "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE, "Ketu": swe.MEAN_NODE
+    }
     PYSWISSEPH_AVAILABLE = True
 except ImportError:
     print("Warning: pyswisseph not available")
+    # Define fallback constants
+    planet_ids = {
+        "Sun": 0, "Moon": 1, "Mercury": 3,
+        "Venus": 4, "Mars": 2, "Jupiter": 5,
+        "Saturn": 6, "Rahu": 11, "Ketu": 11
+    }
     swe = None
     PYSWISSEPH_AVAILABLE = False
 import datetime
@@ -29,11 +42,7 @@ nakshatras = [
     "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
 ]
 
-planet_ids = {
-    "Sun": swe.SUN, "Moon": swe.MOON, "Mercury": swe.MERCURY,
-    "Venus": swe.VENUS, "Mars": swe.MARS, "Jupiter": swe.JUPITER,
-    "Saturn": swe.SATURN, "Rahu": swe.MEAN_NODE, "Ketu": swe.MEAN_NODE
-}
+# planet_ids is now defined inside the try-except block above
 
 sign_lords = {
     "Mesha": "Mars", "Rishaba": "Venus", "Mithuna": "Mercury",
