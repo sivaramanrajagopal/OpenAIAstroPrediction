@@ -9,7 +9,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- Setup Swiss Ephemeris ---
-swe.set_ephe_path('./ephe')  # Use current directory for ephemeris files
+swe.set_ephe_path('')  # Use default ephemeris path
 swe.set_sid_mode(swe.SIDM_LAHIRI)  # Lahiri ayanamsa (Vedic)
 
 # --- Nakshatras & Rasis ---

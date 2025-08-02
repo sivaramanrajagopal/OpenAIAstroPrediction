@@ -37,7 +37,7 @@ dasa_durations = OrderedDict([
 ])
 
 # --- SWISS EPHEMERIS SETUP ---
-swe.set_ephe_path('./ephe')
+swe.set_ephe_path('')
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- HELPER FUNCTIONS ---

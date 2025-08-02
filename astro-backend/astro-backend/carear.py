@@ -65,7 +65,7 @@ sign_careers = {
     "Meena": ["Spirituality", "Pharmacy", "Creative Arts", "Charity"]
 }
 
-swe.set_ephe_path('.')
+swe.set_ephe_path('')
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 

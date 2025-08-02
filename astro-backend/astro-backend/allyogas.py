@@ -11,7 +11,7 @@ import datetime
 import sys
 
 # --- Setup Swiss Ephemeris ---
-swe.set_ephe_path('.')
+swe.set_ephe_path('')
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 rasis = [
