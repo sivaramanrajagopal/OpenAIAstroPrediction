@@ -31,18 +31,19 @@ app = FastAPI(
 )
 
 # --- CORS Settings ---
-# In production, replace "*" with your frontend domain
+# Updated for Vercel frontend deployment
 origins = [
-    "http://localhost:3000",
-    "https://your-frontend-domain.railway.app",  # Update this with your frontend URL
-    "*"  # Remove this in production
+    "http://localhost:3000",  # Local development
+    "https://*.vercel.app",   # All Vercel domains
+    "https://vercel.app",     # Vercel main domain
+    "*"  # Allow all origins for now (can be restricted later)
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=["*"],  # Allow all origins for now
+    allow_credentials=False,  # Changed to False for wildcard origins
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
