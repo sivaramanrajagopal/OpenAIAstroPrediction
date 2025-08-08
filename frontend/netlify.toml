@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NEXT_PUBLIC_BACKEND_URL = "https://openaiastroprediction-production.up.railway.app"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

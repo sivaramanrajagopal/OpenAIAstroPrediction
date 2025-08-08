@@ -1,12 +1,17 @@
 {
-  "name": "astro-frontend",
-  "version": "0.1.0",
+  "name": "vedic-astrology-frontend",
+  "version": "1.0.0",
   "private": true,
+  "description": "Vedic Astrology Frontend - AI-powered astrological insights",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "export": "next build && next export"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.11",

@@ -125,7 +125,7 @@ export default function Home() {
   // Backend URL - automatically detects environment
   const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
                  (process.env.NODE_ENV === 'production' 
-                   ? 'https://your-backend-name.railway.app'  // Update with your Railway URL
+                   ? 'https://openaiastroprediction-production.up.railway.app'
                    : 'http://localhost:8000');
 
   const getPrediction = async () => {
