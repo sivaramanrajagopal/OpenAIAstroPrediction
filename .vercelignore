@@ -2,9 +2,6 @@
 backend/
 astro-backend/
 astro-frontend/
-requirements.txt
-runtime.txt
-Procfile
 nixpacks.toml
 railway.json
 
