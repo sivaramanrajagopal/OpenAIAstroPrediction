@@ -1,13 +1,3 @@
 {
-  "name": "vedic-astrology-frontend",
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "env": {
-    "NEXT_PUBLIC_BACKEND_URL": "https://openaiastroprediction-production.up.railway.app"
-  }
+  "name": "vedic-astrology-frontend"
 }
