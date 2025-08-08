@@ -1,0 +1,39 @@
+# Backend files - ignore for frontend deployment
+backend/
+astro-backend/
+astro-frontend/
+requirements.txt
+runtime.txt
+Procfile
+nixpacks.toml
+railway.json
+
+# Python files
+*.py
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Environment
+.env
+
+# Other
+.DS_Store
+node_modules/

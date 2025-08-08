@@ -1,0 +1,16 @@
+{
+  "name": "vedic-astrology-frontend",
+  "version": 2,
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "installCommand": "npm install",
+  "env": {
+    "NEXT_PUBLIC_BACKEND_URL": "https://openaiastroprediction-production.up.railway.app"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_BACKEND_URL": "https://openaiastroprediction-production.up.railway.app"
+    }
+  }
+}
