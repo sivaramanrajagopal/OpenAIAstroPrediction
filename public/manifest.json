@@ -1,0 +1,16 @@
+{
+  "name": "Vedic Astrology",
+  "short_name": "VedicAstro",
+  "description": "AI-Powered Vedic Astrology Insights",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#007acc",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
