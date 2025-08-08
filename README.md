@@ -1,47 +1,96 @@
-# 🔮 Vedic Astrology API
+# 🔮 Vedic Astrology API & Frontend
 
-A comprehensive Vedic astrology application with AI-powered interpretations, built with FastAPI backend and React frontend.
+A comprehensive Vedic astrology application with AI-powered interpretations using OpenAI GPT-3.5-turbo.
 
-## 🌟 Features
+## ✨ Features
 
-- **Planetary Chart Analysis** - Accurate calculations using Swiss Ephemeris
-- **AI-Powered Interpretations** - GPT-3.5-turbo for cost-effective insights
-- **8 Different Analysis Types**:
-  - Planetary predictions and interpretations
-  - Career analysis and guidance
-  - Vimshottari Dasa timeline
-  - Yogas and doshas detection
-  - Life purpose analysis
-  - Detailed Dasa-Bhukti analysis
-  - Marriage and relationship analysis
-  - Indu Dasa analysis
+- **Planetary Chart Analysis** - Complete birth chart with planets, signs, nakshatras
+- **Career Insights** - AI-powered career analysis based on planetary positions
+- **Dasa Timeline** - Vimshottari Dasa periods with predictions
+- **Yogas & Doshas** - Detection of astrological combinations
+- **Life Purpose Analysis** - Dharmic insights and spiritual guidance
+- **Spouse Analysis** - Marriage compatibility and spouse predictions
+- **Wealth Cycles** - Indu Dasa for prosperity timing
 
-## 🚀 Quick Start
+## 📁 Project Structure
+
+```
+OpenAI-AstroProject/
+├── backend/                 # FastAPI backend
+│   ├── modules/            # Astrology calculation modules
+│   │   ├── astrology.py    # Core planetary calculations
+│   │   ├── career.py       # Career analysis (renamed from carear.py)
+│   │   ├── life_purpose.py # Life purpose & dharma
+│   │   ├── dasa_bhukti.py  # Dasa period analysis
+│   │   └── ...
+│   ├── ephe/              # Swiss Ephemeris data files
+│   ├── main.py            # FastAPI app entry point
+│   ├── requirements.txt   # Python dependencies
+│   └── Procfile          # Railway deployment config
+├── frontend/              # Next.js frontend
+│   ├── pages/            # Next.js pages
+│   ├── styles/           # CSS styles
+│   └── package.json      # Node dependencies
+├── .env.example          # Environment variables template
+└── railway.json          # Railway deployment configuration
+```
+
+## 🚀 Quick Setup
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- OpenAI API key
+
+- Python 3.9+
+- Node.js 16+
+- OpenAI API Key
 
 ### Backend Setup
-```bash
-cd astro-backend/astro-backend
-pip install -r requirements.txt
-python -m uvicorn main:app --host 0.0.0.0 --port 8000
-```
+
+1. **Navigate to backend directory:**
+   ```bash
+   cd backend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Set up environment variables:**
+   ```bash
+   cp ../.env.example .env
+   # Edit .env and add your OpenAI API key
+   ```
+
+4. **Start the backend server:**
+   ```bash
+   uvicorn main:app --reload --port 8000
+   ```
 
 ### Frontend Setup
-```bash
-cd astro-frontend
-npm install
-npm run dev
-```
 
-### Environment Variables
-Create `.env` file in `astro-backend/astro-backend/`:
-```
-OPENAI_API_KEY=your_openai_api_key_here
-```
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
+
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+
+3. **Set up environment variables:**
+   ```bash
+   cp .env.local.example .env.local
+   # Edit .env.local if needed (defaults to localhost:8000)
+   ```
+
+4. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
+
+5. **Open your browser:**
+   Visit `http://localhost:3000`
 
 ## 📡 API Endpoints
 

@@ -122,10 +122,11 @@ export default function Home() {
   const [spouseAnalysis, setSpouseAnalysis] = useState(null);
   const [induDasa, setInduDasa] = useState(null);
 
-  // TODO: Update this URL for production deployment
-  // For Railway: https://your-backend-name.railway.app
-  // For local development: http://localhost:8000
-  const backend = "http://localhost:8000";
+  // Backend URL - automatically detects environment
+  const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
+                 (process.env.NODE_ENV === 'production' 
+                   ? 'https://your-backend-name.railway.app'  // Update with your Railway URL
+                   : 'http://localhost:8000');
 
   const getPrediction = async () => {
     setLoading(true);

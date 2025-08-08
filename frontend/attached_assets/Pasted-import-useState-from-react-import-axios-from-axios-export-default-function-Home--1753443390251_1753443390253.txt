@@ -1,0 +1,71 @@
+import { useState } from "react";
+import axios from "axios";
+
+export default function Home() {
+  const [dob, setDob] = useState("1977-10-29");
+  const [tob, setTob] = useState("21:30");
+  const [lat, setLat] = useState("13.08");
+  const [lon, setLon] = useState("80.28");
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [tab, setTab] = useState("chart");
+
+  const getPrediction = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get("https://<your-backend-repl-url>.repl.co/predict", {
+        params: { dob, tob, lat, lon, tz_offset: 5.5 },
+      });
+      setResult(res.data);
+    } catch (err) {
+      alert("Error fetching data");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-indigo-100 to-purple-100 flex flex-col items-center p-4">
+      <h1 className="text-3xl font-bold text-indigo-700 mb-4">Vedic Astrology</h1>
+      <div className="bg-white p-4 rounded-lg shadow-md w-full max-w-md space-y-3">
+        <input type="date" className="w-full border p-2 rounded" value={dob} onChange={e => setDob(e.target.value)} />
+        <input type="time" className="w-full border p-2 rounded" value={tob} onChange={e => setTob(e.target.value)} />
+        <input type="text" placeholder="Latitude" className="w-full border p-2 rounded" value={lat} onChange={e => setLat(e.target.value)} />
+        <input type="text" placeholder="Longitude" className="w-full border p-2 rounded" value={lon} onChange={e => setLon(e.target.value)} />
+        <button onClick={getPrediction} className="w-full bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+          {loading ? "Calculating..." : "Get Prediction"}
+        </button>
+      </div>
+
+      {result && (
+        <div className="mt-6 w-full max-w-md">
+          {/* Tabs */}
+          <div className="flex border-b border-gray-300 mb-2">
+            <button className={`flex-1 p-2 ${tab === "chart" ? "bg-indigo-500 text-white" : "bg-gray-100"}`} onClick={() => setTab("chart")}>Chart</button>
+            <button className={`flex-1 p-2 ${tab === "prediction" ? "bg-indigo-500 text-white" : "bg-gray-100"}`} onClick={() => setTab("prediction")}>Predictions</button>
+          </div>
+
+          {/* Tab Content */}
+          {tab === "chart" && (
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold text-indigo-700 mb-2">Planetary Positions</h2>
+              <ul>
+                {Object.entries(result.chart).map(([planet, info]) => (
+                  <li key={planet} className="text-gray-700">
+                    {planet}: {info.rasi}, {info.nakshatra} (Pada {info.pada})
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {tab === "prediction" && (
+            <div className="bg-white p-4 rounded-lg shadow-md">
+              <h2 className="text-xl font-semibold text-indigo-700 mb-2">Interpretation</h2>
+              <p className="whitespace-pre-line text-gray-700">{result.interpretation}</p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

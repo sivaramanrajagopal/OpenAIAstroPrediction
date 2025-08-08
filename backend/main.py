@@ -13,15 +13,15 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Imports from other modules ---
-from astrology import get_planet_positions, generate_gpt_prompt, get_astrology_interpretation
-from carear import analyze_career, generate_career_report, get_planet_positions as get_career_planet_positions
-from allyogas import detect_yogas, get_planet_positions as get_yogas_planet_positions
-from dasa import generate_dasa_table
-from life_purpose import analyze_life_purpose, generate_purpose_report, ask_gpt, get_planet_positions as get_life_purpose_planet_positions
-from dasa_bhukti import get_planet_positions as get_dasa_bhukti_planet_positions, generate_dasa_table as generate_dasa_bhukti_table, ask_gpt_dasa_prediction
-from spouse_analysis import get_planet_positions as get_spouse_planet_positions, get_aspects, analyze_marriage, generate_report, ask_gpt_spouse
-from indu_dasa import get_indu_dasa
+# --- Imports from modules ---
+from modules.astrology import get_planet_positions, generate_gpt_prompt, get_astrology_interpretation
+from modules.career import analyze_career, generate_career_report, get_planet_positions as get_career_planet_positions
+from modules.allyogas import detect_yogas, get_planet_positions as get_yogas_planet_positions
+from modules.dasa import generate_dasa_table
+from modules.life_purpose import analyze_life_purpose, generate_purpose_report, ask_gpt, get_planet_positions as get_life_purpose_planet_positions
+from modules.dasa_bhukti import get_planet_positions as get_dasa_bhukti_planet_positions, generate_dasa_table as generate_dasa_bhukti_table, ask_gpt_dasa_prediction
+from modules.spouse_analysis import get_planet_positions as get_spouse_planet_positions, get_aspects, analyze_marriage, generate_report, ask_gpt_spouse
+from modules.indu_dasa import get_indu_dasa
 
 # --- FastAPI App ---
 app = FastAPI(
