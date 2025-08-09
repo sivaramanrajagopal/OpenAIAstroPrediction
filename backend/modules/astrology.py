@@ -14,6 +14,7 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 # Set ephemeris path and sidereal mode
 import os
 ephe_path = os.path.join(os.path.dirname(__file__), '..', 'ephe')
+print(f"Setting ephemeris path to: {ephe_path}")
 swe.set_ephe_path(ephe_path)  # Use absolute path to ephe directory
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
@@ -62,7 +63,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
 
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
-    # swe.set_topo(lon, lat, 0)  # Temporarily comment out topocentric setting
+    swe.set_topo(lon, lat, 0)  # Set topocentric coordinates
 
     # All planets 0-9
     for pid in range(0, 10):
