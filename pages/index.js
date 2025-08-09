@@ -166,6 +166,12 @@ export default function Home() {
         setSpouseAnalysis(spouseRes.spouse_analysis || { gender: "Processing...", lagna: "Processing..." });
         setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
         
+        // Debug logging
+        console.log('Dasa Response:', dasaRes);
+        console.log('Dasa Timeline:', dasaRes.dasa_timeline?.[2]);
+        console.log('Dasa Bhukti Response:', dasaBhuktiRes);
+        console.log('Dasa Bhukti Table:', dasaBhuktiRes.table);
+        
       } else {
         throw new Error("Backend not available");
       }
@@ -666,6 +672,10 @@ export default function Home() {
                     </h3>
                     {dasa && dasa.length > 0 ? (
                       <div style={{ overflowX: 'auto' }}>
+                        {/* Debug info */}
+                        <div style={{marginBottom: '10px', padding: '10px', background: '#f0f9ff', borderRadius: '8px', fontSize: '0.8rem'}}>
+                          Debug: Dasa data length: {dasa.length}, First item: {JSON.stringify(dasa[0])}
+                        </div>
                         <table style={{
                           width: '100%',
                           borderCollapse: 'collapse',
@@ -743,7 +753,7 @@ export default function Home() {
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.duration}</td>
+                                }}>{period.duration || 'N/A'} ({typeof period.duration})</td>
                               </tr>
                             ))}
                           </tbody>
@@ -846,6 +856,10 @@ export default function Home() {
                     </h3>
                     {dasaBhukti && dasaBhukti.length > 0 ? (
                       <div style={{ overflowX: 'auto' }}>
+                        {/* Debug info */}
+                        <div style={{marginBottom: '10px', padding: '10px', background: '#f0f9ff', borderRadius: '8px', fontSize: '0.8rem'}}>
+                          Debug: Dasa Bhukti data length: {dasaBhukti.length}, First item: {JSON.stringify(dasaBhukti[0])}
+                        </div>
                         <table style={{
                           width: '100%',
                           borderCollapse: 'collapse',
@@ -925,7 +939,7 @@ export default function Home() {
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.duration} years</td>
+                                }}>{period.duration || 'N/A'} years ({typeof period.duration})</td>
                               </tr>
                             ))}
                           </tbody>
