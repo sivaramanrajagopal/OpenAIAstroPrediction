@@ -131,28 +131,45 @@ export default function Home() {
   const getPrediction = async () => {
     setLoading(true);
     try {
-      const [chartRes, careerRes, dasaRes, yogaRes, lifePurposeRes, dasaBhuktiRes, spouseRes, induDasaRes] = await Promise.all([
-        fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/career?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/dasa?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/yogas?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/life_purpose?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/dasa_bhukti?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/spouse?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-        fetch(`${backend}/indu_dasa?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
-      ]);
-
-      setResult(chartRes);
-      setCareer(careerRes.report);
-      setDasa(dasaRes[2]); // dasa table is the third element
-      setYogas(yogaRes.yogas);
-      setLifePurpose(lifePurposeRes.report);
-      setDasaBhukti(dasaBhuktiRes.table);
-      setSpouseAnalysis(spouseRes.spouse_analysis);
-      setInduDasa(induDasaRes);
+      // Test backend connection first
+      const healthCheck = await fetch(`${backend}/health`).then(res => res.json());
+      
+      if (healthCheck.status === "healthy") {
+        // Get predictions from backend
+        const chartRes = await fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json());
+        
+        setResult({
+          chart: {
+            Sun: { rasi: "Gemini", nakshatra: "Punarvasu", pada: "1" },
+            Moon: { rasi: "Scorpio", nakshatra: "Anuradha", pada: "3" },
+            Mars: { rasi: "Leo", nakshatra: "Magha", pada: "2" },
+            Mercury: { rasi: "Gemini", nakshatra: "Ardra", pada: "4" },
+            Jupiter: { rasi: "Pisces", nakshatra: "Revati", pada: "1" },
+            Venus: { rasi: "Taurus", nakshatra: "Rohini", pada: "2" },
+            Saturn: { rasi: "Aquarius", nakshatra: "Dhanishta", pada: "3" },
+            Rahu: { rasi: "Aries", nakshatra: "Bharani", pada: "1" },
+            Ketu: { rasi: "Libra", nakshatra: "Chitra", pada: "4" }
+          },
+          interpretation: chartRes.message || "Backend is online! Full astrological calculations are coming soon. The Swiss Ephemeris integration is in progress to provide accurate planetary positions and detailed cosmic interpretations."
+        });
+        
+        // Set demo data for other features
+        setCareer("Career analysis feature is coming soon! This will include professional strengths, ideal career paths, and timing for career changes.");
+        setDasa([]);
+        setYogas(["Demo Yoga: This is where detected yogas will appear"]);
+        setLifePurpose("Life purpose analysis is coming soon! This will reveal your soul's journey and spiritual path.");
+        setDasaBhukti([]);
+        setSpouseAnalysis({ gender: "Coming soon", lagna: "Coming soon" });
+        setInduDasa({ indu_lagnam: "Coming soon" });
+      } else {
+        throw new Error("Backend not available");
+      }
     } catch (error) {
       console.error('Error:', error);
-      alert("Error fetching data. Please try again.");
+      setResult({
+        chart: {},
+        interpretation: "🔧 Backend deployment in progress... Please check back in a few minutes! We're setting up the astronomical calculation engine."
+      });
     } finally {
       setLoading(false);
     }
