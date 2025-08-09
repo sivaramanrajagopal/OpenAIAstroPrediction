@@ -23,14 +23,35 @@ if current_dir not in sys.path:
 try:
     import swisseph as swe
     # Set up ephemeris path and mode for Vedic calculations
-    swe.set_ephe_path('./ephe')
+    ephe_dir = os.path.join(os.path.dirname(__file__), 'ephe')
+    print(f"🔍 Setting ephemeris path to: {ephe_dir}")
+    print(f"🔍 Ephe directory exists: {os.path.exists(ephe_dir)}")
+    if os.path.exists(ephe_dir):
+        print(f"🔍 Ephemeris files: {os.listdir(ephe_dir) if os.path.exists(ephe_dir) else 'None'}")
+    
+    swe.set_ephe_path(ephe_dir)
     swe.set_sid_mode(swe.SIDM_LAHIRI)
-    SWISSEPH_AVAILABLE = True
-    print("✅ Swiss Ephemeris available and configured for Vedic calculations")
+    
+    # Test Swiss Ephemeris with a simple calculation
+    try:
+        test_jd = swe.julday(2000, 1, 1, 12.0)
+        test_calc = swe.calc_ut(test_jd, swe.SUN, swe.FLG_SIDEREAL)
+        print(f"🔍 Swiss Ephemeris test calculation successful: {test_calc[0][0]:.2f}°")
+        SWISSEPH_AVAILABLE = True
+        print("✅ Swiss Ephemeris available and working correctly")
+    except Exception as calc_error:
+        print(f"⚠️  Swiss Ephemeris calculation test failed: {calc_error}")
+        SWISSEPH_AVAILABLE = False
+        swe = None
+        
 except ImportError as e:
     SWISSEPH_AVAILABLE = False
     swe = None
-    print(f"⚠️  Swiss Ephemeris not available: {e} - using fallback calculations")
+    print(f"⚠️  Swiss Ephemeris import failed: {e} - using fallback calculations")
+except Exception as e:
+    SWISSEPH_AVAILABLE = False
+    swe = None
+    print(f"⚠️  Swiss Ephemeris setup failed: {e} - using fallback calculations")
 
 # Load environment variables
 load_dotenv()
