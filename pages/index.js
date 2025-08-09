@@ -119,12 +119,6 @@ export default function Home() {
                    ? 'https://openaiastroprediction.onrender.com'
                    : 'http://localhost:8000');
 
-  console.log('🔧 Environment check:', {
-    NODE_ENV: process.env.NODE_ENV,
-    NEXT_PUBLIC_BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL,
-    backend: backend
-  });
-
   const getPrediction = async () => {
     setLoading(true);
     setError('');
@@ -138,16 +132,10 @@ export default function Home() {
     setInduDasa(null);
 
     try {
-      console.log('🔍 Backend URL:', backend);
-      console.log('🔍 Form Data:', formData);
-      
       // Test backend connection first
-      console.log('🔍 Testing health endpoint...');
       const healthCheck = await fetch(`${backend}/health`).then(res => res.json());
-      console.log('🔍 Health check result:', healthCheck);
       
       if (healthCheck.status === "healthy") {
-        console.log('✅ Backend is healthy, fetching data...');
         // Get all data from backend in parallel
         const promises = [
           fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
@@ -161,9 +149,6 @@ export default function Home() {
         ];
 
         const [chartRes, careerRes, dasaRes, yogasRes, lifePurposeRes, dasaBhuktiRes, spouseRes, induDasaRes] = await Promise.all(promises);
-        console.log('✅ All API calls completed successfully');
-        console.log('📊 Chart response:', chartRes);
-        console.log('📊 Dasa response:', dasaRes);
         
         // Set real data from backend
         setResults({
@@ -185,7 +170,6 @@ export default function Home() {
         throw new Error("Backend not available");
       }
     } catch (error) {
-      console.error('❌ Error in getPrediction:', error);
       setError(`Error: ${error.message}`);
     } finally {
       setLoading(false);
@@ -400,36 +384,6 @@ export default function Home() {
                 Get Your Astrological Reading
               </>
             )}
-          </button>
-
-          {/* Test button for debugging */}
-          <button
-            onClick={async () => {
-              console.log('🧪 Testing backend connection...');
-              try {
-                const response = await fetch(`${backend}/health`);
-                const data = await response.json();
-                console.log('🧪 Test result:', data);
-                alert(`Backend test: ${data.status}`);
-              } catch (error) {
-                console.error('🧪 Test error:', error);
-                alert(`Test error: ${error.message}`);
-              }
-            }}
-            style={{
-              width: '100%',
-              padding: '8px',
-              background: '#f59e0b',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-          >
-            🧪 Test Backend Connection
           </button>
 
           {error && (
