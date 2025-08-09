@@ -1006,189 +1006,191 @@ export default function Home() {
                       Wealth Cycles & Prosperity Periods
                     </h3>
                     {induDasa && Object.keys(induDasa).length > 0 ? (
-                      <div style={{
-                        background: 'rgba(34, 197, 94, 0.05)',
-                        borderRadius: '16px',
-                        padding: '24px',
-                        border: '1px solid rgba(34, 197, 94, 0.2)',
-                        marginBottom: '20px'
-                      }}>
-                        <h4 style={{
-                          fontSize: '1.1rem',
-                          fontWeight: '700',
-                          color: '#15803d',
-                          marginBottom: '20px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px'
-                        }}>
-                          💰 Indu Lagnam Analysis
-                        </h4>
+                      <>
                         <div style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                          gap: '16px',
+                          background: 'rgba(34, 197, 94, 0.05)',
+                          borderRadius: '16px',
+                          padding: '24px',
+                          border: '1px solid rgba(34, 197, 94, 0.2)',
                           marginBottom: '20px'
                         }}>
-                          <div style={{
+                          <h4 style={{
+                            fontSize: '1.1rem',
+                            fontWeight: '700',
+                            color: '#15803d',
+                            marginBottom: '20px',
                             display: 'flex',
-                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            padding: '8px 0',
-                            borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
+                            gap: '8px'
                           }}>
-                            <span style={{fontWeight: '600', color: '#374151'}}>Ascendant:</span>
-                            <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.ascendant}</span>
-                          </div>
+                            💰 Indu Lagnam Analysis
+                          </h4>
                           <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '8px 0',
-                            borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
-                          }}>
-                            <span style={{fontWeight: '600', color: '#374151'}}>Moon Rasi:</span>
-                            <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.moon_rasi}</span>
-                          </div>
-                          <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '8px 0',
-                            borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
-                          }}>
-                            <span style={{fontWeight: '600', color: '#374151'}}>Indu Lagnam:</span>
-                            <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.indu_lagnam}</span>
-                          </div>
-                          <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            padding: '8px 0',
-                            borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
-                          }}>
-                            <span style={{fontWeight: '600', color: '#374151'}}>Indu Lord:</span>
-                            <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.indu_lord}</span>
-                          </div>
-                        </div>
-
-                        {induDasa.planets_in_indu_lagnam && induDasa.planets_in_indu_lagnam.length > 0 && (
-                          <div style={{
-                            background: 'rgba(255, 255, 255, 0.9)',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            border: '1px solid rgba(34, 197, 94, 0.3)',
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
                             marginBottom: '20px'
                           }}>
-                            <h5 style={{
-                              fontSize: '1rem',
-                              fontWeight: '600',
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '8px 0',
+                              borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
+                            }}>
+                              <span style={{fontWeight: '600', color: '#374151'}}>Ascendant:</span>
+                              <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.ascendant}</span>
+                            </div>
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '8px 0',
+                              borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
+                            }}>
+                              <span style={{fontWeight: '600', color: '#374151'}}>Moon Rasi:</span>
+                              <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.moon_rasi}</span>
+                            </div>
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '8px 0',
+                              borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
+                            }}>
+                              <span style={{fontWeight: '600', color: '#374151'}}>Indu Lagnam:</span>
+                              <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.indu_lagnam}</span>
+                            </div>
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              padding: '8px 0',
+                              borderBottom: '1px solid rgba(34, 197, 94, 0.1)'
+                            }}>
+                              <span style={{fontWeight: '600', color: '#374151'}}>Indu Lord:</span>
+                              <span style={{color: '#15803d', fontWeight: '500'}}>{induDasa.indu_lord}</span>
+                            </div>
+                          </div>
+
+                          {induDasa.planets_in_indu_lagnam && induDasa.planets_in_indu_lagnam.length > 0 && (
+                            <div style={{
+                              background: 'rgba(255, 255, 255, 0.9)',
+                              borderRadius: '12px',
+                              padding: '16px',
+                              border: '1px solid rgba(34, 197, 94, 0.3)',
+                              marginBottom: '20px'
+                            }}>
+                              <h5 style={{
+                                fontSize: '1rem',
+                                fontWeight: '600',
+                                color: '#15803d',
+                                marginBottom: '12px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '8px'
+                              }}>
+                                🌟 Planets in Indu Lagnam
+                              </h5>
+                              <div style={{
+                                display: 'flex',
+                                flexWrap: 'wrap',
+                                gap: '8px'
+                              }}>
+                                {induDasa.planets_in_indu_lagnam.map((planet, index) => (
+                                  <span key={index} style={{
+                                    background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                                    color: 'white',
+                                    padding: '6px 12px',
+                                    borderRadius: '20px',
+                                    fontSize: '0.85rem',
+                                    fontWeight: '500',
+                                    boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)'
+                                  }}>
+                                    {planet}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {induDasa.timeline && induDasa.timeline.length > 0 && (
+                          <div style={{
+                            background: 'rgba(34, 197, 94, 0.05)',
+                            borderRadius: '16px',
+                            padding: '24px',
+                            border: '1px solid rgba(34, 197, 94, 0.2)'
+                          }}>
+                            <h4 style={{
+                              fontSize: '1.1rem',
+                              fontWeight: '700',
                               color: '#15803d',
-                              marginBottom: '12px',
+                              marginBottom: '20px',
                               display: 'flex',
                               alignItems: 'center',
                               gap: '8px'
                             }}>
-                              🌟 Planets in Indu Lagnam
-                            </h5>
+                              ⏰ Wealth & Prosperity Timeline
+                            </h4>
                             <div style={{
-                              display: 'flex',
-                              flexWrap: 'wrap',
-                              gap: '8px'
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                              gap: '16px'
                             }}>
-                              {induDasa.planets_in_indu_lagnam.map((planet, index) => (
-                                <span key={index} style={{
-                                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                                  color: 'white',
-                                  padding: '6px 12px',
-                                  borderRadius: '20px',
-                                  fontSize: '0.85rem',
-                                  fontWeight: '500',
-                                  boxShadow: '0 2px 4px rgba(245, 158, 11, 0.3)'
+                              {induDasa.timeline.map((period, index) => (
+                                <div key={index} style={{
+                                  background: 'rgba(255, 255, 255, 0.9)',
+                                  borderRadius: '12px',
+                                  padding: '16px',
+                                  border: '1px solid rgba(34, 197, 94, 0.3)',
+                                  transition: 'all 0.3s ease',
+                                  cursor: 'pointer'
                                 }}>
-                                  {planet}
-                                </span>
+                                  <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    marginBottom: '8px'
+                                  }}>
+                                    <div style={{
+                                      fontSize: '1rem',
+                                      fontWeight: '700',
+                                      color: '#15803d'
+                                    }}>{period.maha_dasa}</div>
+                                    <div style={{
+                                      fontSize: '0.9rem',
+                                      color: '#16a34a',
+                                      fontWeight: '500'
+                                    }}>• {period.bukti}</div>
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.85rem',
+                                    color: '#6b7280',
+                                    marginBottom: '4px'
+                                  }}>
+                                    {period.start} to {period.end}
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.8rem',
+                                    color: '#15803d',
+                                    fontWeight: '600',
+                                    background: 'rgba(34, 197, 94, 0.1)',
+                                    padding: '2px 8px',
+                                    borderRadius: '12px',
+                                    display: 'inline-block'
+                                  }}>
+                                    {Math.round(((new Date(period.end) - new Date(period.start)) / (365.25 * 24 * 60 * 60 * 1000)) * 10) / 10} years
+                                  </div>
+                                </div>
                               ))}
                             </div>
                           </div>
-                         )}
-                       </div>
- 
-                       {induDasa.timeline && induDasa.timeline.length > 0 && (
-                         <div style={{
-                           background: 'rgba(34, 197, 94, 0.05)',
-                           borderRadius: '16px',
-                           padding: '24px',
-                           border: '1px solid rgba(34, 197, 94, 0.2)'
-                         }}>
-                           <h4 style={{
-                             fontSize: '1.1rem',
-                             fontWeight: '700',
-                             color: '#15803d',
-                             marginBottom: '20px',
-                             display: 'flex',
-                             alignItems: 'center',
-                             gap: '8px'
-                           }}>
-                             ⏰ Wealth & Prosperity Timeline
-                           </h4>
-                           <div style={{
-                             display: 'grid',
-                             gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                             gap: '16px'
-                           }}>
-                             {induDasa.timeline.map((period, index) => (
-                               <div key={index} style={{
-                                 background: 'rgba(255, 255, 255, 0.9)',
-                                 borderRadius: '12px',
-                                 padding: '16px',
-                                 border: '1px solid rgba(34, 197, 94, 0.3)',
-                                 transition: 'all 0.3s ease',
-                                 cursor: 'pointer'
-                               }}>
-                                 <div style={{
-                                   display: 'flex',
-                                   alignItems: 'center',
-                                   gap: '8px',
-                                   marginBottom: '8px'
-                                 }}>
-                                   <div style={{
-                                     fontSize: '1rem',
-                                     fontWeight: '700',
-                                     color: '#15803d'
-                                   }}>{period.maha_dasa}</div>
-                                   <div style={{
-                                     fontSize: '0.9rem',
-                                     color: '#16a34a',
-                                     fontWeight: '500'
-                                   }}>• {period.bukti}</div>
-                                 </div>
-                                 <div style={{
-                                   fontSize: '0.85rem',
-                                   color: '#6b7280',
-                                   marginBottom: '4px'
-                                 }}>
-                                   {period.start} to {period.end}
-                                 </div>
-                                 <div style={{
-                                   fontSize: '0.8rem',
-                                   color: '#15803d',
-                                   fontWeight: '600',
-                                   background: 'rgba(34, 197, 94, 0.1)',
-                                   padding: '2px 8px',
-                                   borderRadius: '12px',
-                                   display: 'inline-block'
-                                 }}>
-                                   {Math.round(((new Date(period.end) - new Date(period.start)) / (365.25 * 24 * 60 * 60 * 1000)) * 10) / 10} years
-                                 </div>
-                               </div>
-                             ))}
-                           </div>
-                         </div>
-                       )}
-                     ) : (
-                       <p style={{color: '#64748b', margin: 0}}>Loading wealth analysis...</p>
-                     )}
+                        )}
+                      </>
+                    ) : (
+                      <p style={{color: '#64748b', margin: 0}}>Loading wealth analysis...</p>
+                    )}
                   </>
                 )}
               </div>
