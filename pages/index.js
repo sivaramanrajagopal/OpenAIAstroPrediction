@@ -402,6 +402,36 @@ export default function Home() {
             )}
           </button>
 
+          {/* Test button for debugging */}
+          <button
+            onClick={async () => {
+              console.log('🧪 Testing backend connection...');
+              try {
+                const response = await fetch(`${backend}/health`);
+                const data = await response.json();
+                console.log('🧪 Test result:', data);
+                alert(`Backend test: ${data.status}`);
+              } catch (error) {
+                console.error('🧪 Test error:', error);
+                alert(`Test error: ${error.message}`);
+              }
+            }}
+            style={{
+              width: '100%',
+              padding: '8px',
+              background: '#f59e0b',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              marginTop: '10px'
+            }}
+          >
+            🧪 Test Backend Connection
+          </button>
+
           {error && (
             <div style={{
               marginTop: '20px',
