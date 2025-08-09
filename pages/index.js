@@ -521,7 +521,25 @@ export default function Home() {
                               textAlign: 'left',
                               borderBottom: '1px solid #e2e8f0',
                               fontSize: '0.9rem'
+                            }}>Longitude</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
                             }}>Rasi</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Rasi Lord</th>
                             <th style={{
                               background: '#f1f5f9',
                               fontWeight: '600',
@@ -539,7 +557,34 @@ export default function Home() {
                               textAlign: 'left',
                               borderBottom: '1px solid #e2e8f0',
                               fontSize: '0.9rem'
+                            }}>Nakshatra Lord</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
                             }}>Pada</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Degrees in Rasi</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Status</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -559,7 +604,19 @@ export default function Home() {
                                 borderBottom: '1px solid #f1f5f9',
                                 color: '#4b5563',
                                 fontSize: '0.9rem'
+                              }}>{info.longitude?.toFixed(2)}°</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
                               }}>{info.rasi}</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
+                              }}>{info.rasi_lord}</td>
                               <td style={{
                                 padding: '12px 16px',
                                 borderBottom: '1px solid #f1f5f9',
@@ -571,7 +628,27 @@ export default function Home() {
                                 borderBottom: '1px solid #f1f5f9',
                                 color: '#4b5563',
                                 fontSize: '0.9rem'
+                              }}>{info.nakshatra_lord}</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
                               }}>{info.pada}</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
+                              }}>{info.degrees_in_rasi?.toFixed(2)}°</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem',
+                                fontWeight: info.retrograde ? '600' : '400',
+                                color: info.retrograde ? '#dc2626' : '#4b5563'
+                              }}>{info.retrograde ? 'Retrograde' : 'Direct'}</td>
                             </tr>
                           ))}
                         </tbody>
