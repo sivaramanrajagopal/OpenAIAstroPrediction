@@ -49,9 +49,7 @@ def get_chart_info(longitude, speed=None):
         'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     }
 
-
 # --- Planet Positions ---
-
 def get_planet_positions(dob, tob, lat, lon, tz_offset):
     local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
     utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
@@ -61,6 +59,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
 
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
+    swe.set_topo(lon, lat, 0)  # Set topocentric coordinates
 
     # All planets 0-9
     for pid in range(0, 10):
@@ -80,9 +79,10 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
         results[f'Ketu ({base_name})'] = ketu_info
 
     # Ascendant (Lagna)
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
+    cusps_result, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
+    cusps = cusps_result[1:]  # Extract cusps from the result
     results['Ascendant'] = get_chart_info(ascmc[0])
-    return results
+    return results, ascmc[0], cusps
 
 
 # --- GPT Prompt Generator ---
