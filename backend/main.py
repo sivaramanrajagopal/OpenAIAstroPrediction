@@ -184,7 +184,8 @@ def health_check():
 def root():
     return {
         "message": "🔮 Vedic Astrology API",
-        "status": "online",
+        "status": "online", 
+        "version": "2.0",
         "frontend": "https://aiastroprediction.vercel.app",
         "capabilities": {
             "swiss_ephemeris": "✅ Available" if SWISSEPH_AVAILABLE else "❌ Not Available",
