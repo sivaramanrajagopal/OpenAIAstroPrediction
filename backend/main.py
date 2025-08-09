@@ -213,7 +213,9 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         # Try original Swiss Ephemeris calculations first - matching original code structure
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
+                logger.info("Attempting Swiss Ephemeris calculation...")
                 data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
+                logger.info(f"Swiss Ephemeris calculation successful. Ascendant: {asc_deg}")
                 prompt = generate_gpt_prompt(data)
                 interpretation = get_astrology_interpretation(prompt)
                 # Return exact format as original code
@@ -225,6 +227,9 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 }
             except Exception as e:
                 logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
+                logger.error(f"Error type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":

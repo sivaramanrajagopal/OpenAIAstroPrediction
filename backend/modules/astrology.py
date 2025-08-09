@@ -59,7 +59,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
 
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
-    swe.set_topo(lon, lat, 0)  # Set topocentric coordinates
+    # swe.set_topo(lon, lat, 0)  # Temporarily comment out topocentric setting
 
     # All planets 0-9
     for pid in range(0, 10):
