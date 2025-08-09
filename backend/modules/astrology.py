@@ -15,9 +15,17 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)  # Go up one level to backend root
+ephe_path = os.path.join(parent_dir, 'ephe')  # Point to backend/ephe directory
 print(f"Current directory: {current_dir}")
 print(f"Parent directory: {parent_dir}")
-swe.set_ephe_path(parent_dir)  # Point to backend root where ephemeris files are
+print(f"Ephemeris path: {ephe_path}")
+print(f"Ephemeris path exists: {os.path.exists(ephe_path)}")
+if os.path.exists(ephe_path):
+    swe.set_ephe_path(ephe_path)
+    print(f"✅ Set ephemeris path to: {ephe_path}")
+else:
+    print(f"⚠️ Ephemeris path not found, using default")
+    swe.set_ephe_path('.')
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # 27 Nakshatras and 12 Rasis
@@ -47,12 +55,30 @@ nakshatra_lords = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "S
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
     """Return Rasi, Nakshatra, Pada, and retrograde status."""
+    # Calculate nakshatra
+    nakshatra_length = 360 / 27  # 13.333...
+    nakshatra_index = int((longitude % 360) // nakshatra_length)
+    
+    # Calculate pada
+    longitude_in_nakshatra = longitude % nakshatra_length
+    pada_length = nakshatra_length / 4  # 3.333...
+    pada = int((longitude_in_nakshatra / pada_length) + 1)
+    
+    # Calculate rasi
+    rasi_index = int(longitude // 30)
+    
+    # Calculate degrees in rasi
+    degrees_in_rasi = longitude % 30
+    
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
-        'rasi': rasis[int(longitude // 30)],
-        'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
-        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
+        'rasi': rasis[rasi_index],
+        'rasi_lord': rasi_lords.get(rasis[rasi_index], 'Unknown'),
+        'nakshatra': nakshatras[nakshatra_index],
+        'nakshatra_lord': nakshatra_lords[nakshatra_index % 9],
+        'pada': pada,
+        'degrees_in_rasi': degrees_in_rasi
     }
 
 # --- Planet Positions ---
@@ -72,16 +98,15 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-    # Rahu/Ketu - True & Mean Node
-    for node_type, base_name in [(swe.TRUE_NODE, 'True'), (swe.MEAN_NODE, 'Mean')]:
-        rahu = swe.calc_ut(jd, node_type, FLAGS)[0]
-        rahu_info = get_chart_info(rahu[0], rahu[3])
-        results[f'Rahu ({base_name})'] = rahu_info
+    # Rahu/Ketu - True Node only (matching reference code)
+    rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
+    rahu_info = get_chart_info(rahu[0], rahu[3])
+    results['Rahu'] = rahu_info
 
-        ketu_lon = (rahu[0] + 180.0) % 360.0
-        ketu_info = get_chart_info(ketu_lon, rahu[3])  # same speed (direction doesn't matter for chart info)
-        ketu_info['retrograde'] = True  # Force retrograde = True
-        results[f'Ketu ({base_name})'] = ketu_info
+    ketu_lon = (rahu[0] + 180.0) % 360.0
+    ketu_info = get_chart_info(ketu_lon, rahu[3])
+    ketu_info['retrograde'] = True  # Force retrograde = True
+    results['Ketu'] = ketu_info
 
     # Ascendant (Lagna)
     cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
