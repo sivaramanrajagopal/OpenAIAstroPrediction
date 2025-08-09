@@ -44,16 +44,12 @@ swe.set_sid_mode(swe.SIDM_LAHIRI)
 # --- FUNCTIONS ---
 def get_chart_info(longitude, speed=None):
     #longitude = longitude % 360
-    nakshatra_index = int((longitude % 360) // (360 / 27))
-    nakshatra_longitude = (longitude % 360) % (360 / 27)
-    pada = int(nakshatra_longitude // (360 / 27 / 4)) + 1
-    
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
         'rasi': rasis[int(longitude // 30)],
-        'nakshatra': nakshatras[nakshatra_index],
-        'pada': pada
+        'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
+        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     }
 
 def get_planet_positions(jd, lat, lon):
