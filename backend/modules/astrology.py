@@ -14,10 +14,10 @@ client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 # Set ephemeris path and sidereal mode
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
-ephe_path = os.path.join(current_dir, '..', 'ephe')
+parent_dir = os.path.dirname(current_dir)  # Go up one level to backend root
 print(f"Current directory: {current_dir}")
-print(f"Ephemeris path: {ephe_path}")
-swe.set_ephe_path(ephe_path)  # Use absolute path to ephe directory
+print(f"Parent directory: {parent_dir}")
+swe.set_ephe_path(parent_dir)  # Point to backend root where ephemeris files are
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # 27 Nakshatras and 12 Rasis
