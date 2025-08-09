@@ -312,12 +312,8 @@ def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, g
                 data, asc_deg, cusps = get_career_planet_positions(jd, lat, lon)
                 analysis = analyze_career(data, asc_deg, cusps, gender)
                 report = generate_career_report(analysis, asc_deg)
-                return {
-                    "status": "success",
-                    "career_analysis": analysis, 
-                    "report": report,
-                    "calculation_method": "swiss_ephemeris"
-                }
+                # Return format matching original code  
+                return {"career_report": report}
             except Exception as e:
                 logger.warning(f"Career analysis calculation failed: {str(e)}")
         
@@ -339,12 +335,7 @@ def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, g
                 f"favorable periods for career advancement. Recommended fields include technology, communication, " \
                 f"and leadership roles. Best career growth periods: ages 28-35 and 42-49."
         
-        return {
-            "status": "calculated",
-            "career_analysis": career_analysis,
-            "report": report,
-            "calculation_method": "vedic_principles"
-        }
+        return {"career_report": report}
         
     except Exception as e:
         logger.error(f"Error in career endpoint: {str(e)}")
@@ -367,13 +358,8 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 # Use the original function that returns nakshatra, pada, and dasa_table with durations
                 nakshatra, pada, dasa_table = generate_dasa_table(jd, moon_longitude)
                 
-                return {
-                    "status": "success", 
-                    "birth_nakshatra": nakshatra,
-                    "birth_pada": pada,
-                    "dasa_timeline": dasa_table, 
-                    "calculation_method": "swiss_ephemeris_original"
-                }
+                # Return format matching original code
+                return {"dasa_table": dasa_table}
             except Exception as e:
                 logger.warning(f"Dasa calculation failed: {str(e)}")
         
@@ -390,12 +376,7 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
             {"planet": "Jupiter", "start_age": age+41, "end_age": age+57, "duration": 16}
         ]
         
-        return {
-            "status": "calculated",
-            "dasa_timeline": dasa_timeline,
-            "calculation_method": "vimshottari_system",
-            "note": "Dasa periods calculated using traditional Vimshottari system"
-        }
+        return {"dasa_table": dasa_timeline}
         
     except Exception as e:
         logger.error(f"Error in dasa endpoint: {str(e)}")
@@ -411,7 +392,8 @@ def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
             try:
                 data = get_yogas_planet_positions(dob, tob, lat, lon, tz_offset)
                 yogas = detect_yogas(data)
-                return {"status": "success", "yogas": yogas, "calculation_method": "swiss_ephemeris"}
+                # Return format matching original code
+                return {"yogas": yogas}
             except Exception as e:
                 logger.warning(f"Yoga detection failed: {str(e)}")
         
@@ -426,12 +408,7 @@ def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
             "🔥 Mangal Yoga: Mars placement suggesting courage and determination"
         ]
         
-        return {
-            "status": "calculated",
-            "yogas": detected_yogas,
-            "calculation_method": "vedic_principles",
-            "note": "Yoga analysis based on classical Vedic principles"
-        }
+        return {"yogas": detected_yogas}
         
     except Exception as e:
         logger.error(f"Error in yogas endpoint: {str(e)}")
@@ -678,7 +655,8 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 data = get_indu_dasa(dob, tob, lat, lon, tz_offset)
-                return {"status": "success", **data, "calculation_method": "swiss_ephemeris"}
+                # Return format matching original code
+                return data
             except Exception as e:
                 logger.warning(f"Indu Dasa calculation failed: {str(e)}")
         
@@ -699,12 +677,7 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
             ]
         }
         
-        return {
-            "status": "calculated",
-            **indu_analysis,
-            "calculation_method": "indu_lagna_system",
-            "note": "Indu Lagna analysis for wealth and prosperity timing"
-        }
+        return indu_analysis
         
     except Exception as e:
         logger.error(f"Error in indu_dasa endpoint: {str(e)}")
