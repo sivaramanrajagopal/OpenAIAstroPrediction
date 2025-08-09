@@ -41,11 +41,18 @@ nakshatra_lords = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "S
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
     """Return Rasi, Nakshatra, Pada, and retrograde status."""
+    # Ensure longitude is within bounds
+    longitude = longitude % 360
+    
+    # Calculate indices with bounds checking
+    rasi_index = int(longitude // 30) % 12  # Ensure 0-11 range
+    nakshatra_index = int((longitude // (360 / 27))) % 27  # Ensure 0-26 range
+    
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
-        'rasi': rasis[int(longitude // 30)],
-        'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
+        'rasi': rasis[rasi_index],
+        'nakshatra': nakshatras[nakshatra_index],
         'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     }
 
