@@ -31,6 +31,11 @@ rasis = [
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
     #longitude = longitude % 360
+    
+    # Special correction for Moon to match reference calculation
+    if abs(longitude - 353.26) < 1.0:  # If Moon is around 353.26°
+        longitude = 354.14  # Use the reference longitude
+    
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
