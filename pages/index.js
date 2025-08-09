@@ -743,7 +743,7 @@ export default function Home() {
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.years}</td>
+                                }}>{period.duration}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -906,26 +906,26 @@ export default function Home() {
                                   fontSize: '0.9rem',
                                   fontWeight: '600'
                                 }}>
-                                  {period.maha_dasa}-{period.bhukti || period.planet}
+                                  {period.planet}
                                 </td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.start}</td>
+                                }}>{period.start_date}</td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.end}</td>
+                                }}>{period.end_date}</td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.months || period.duration} {period.months ? 'months' : 'units'}</td>
+                                }}>{period.duration} years</td>
                               </tr>
                             ))}
                           </tbody>
