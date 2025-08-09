@@ -11,7 +11,8 @@ load_dotenv()
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-# Set sidereal mode
+# Set ephemeris path and sidereal mode
+swe.set_ephe_path('./ephe')  # Point to the ephe directory
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # 27 Nakshatras and 12 Rasis
