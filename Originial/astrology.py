@@ -86,7 +86,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     results['Ketu'] = ketu_info
 
     # Ascendant & Houses
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flag=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results, ascmc[0], cusps
 
@@ -108,14 +108,14 @@ def generate_gpt_prompt(data):
 # --- Get GPT Interpretation ---
 def get_astrology_interpretation(prompt_text):
     try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{
-                "role": "user",
-                "content": prompt_text
-            }],
-            temperature=0.7
-        )
+        response = client.chat.completions.create(model="gpt-4o",
+                                                  messages=[{
+                                                      "role":
+                                                      "user",
+                                                      "content":
+                                                      prompt_text
+                                                  }],
+                                                  temperature=0.7)
         return response.choices[0].message.content
     except Exception as e:
         return f"Error from OpenAI: {e}"
