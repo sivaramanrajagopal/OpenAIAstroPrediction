@@ -209,18 +209,14 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Predict endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
-        # Try original Swiss Ephemeris calculations first
+        # Try original Swiss Ephemeris calculations first - matching original code structure
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
                 prompt = generate_gpt_prompt(data)
                 interpretation = get_astrology_interpretation(prompt)
-                return {
-                    "status": "success",
-                    "chart": data, 
-                    "gpt_interpretation": interpretation,
-                    "calculation_method": "original_swiss_ephemeris"
-                }
+                # Return exact format as original code
+                return {"chart": data, "interpretation": interpretation}
             except Exception as e:
                 logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
         
@@ -261,11 +257,9 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                                    f"with excellent problem-solving abilities and a compassionate nature."
             
             return {
-                "status": "calculated",
                 "chart": {k: {"rasi": v["rasi"], "nakshatra": v["nakshatra"], "pada": v["pada"]} 
                          for k, v in chart_data.items()},
-                "gpt_interpretation": gpt_interpretation,
-                "calculation_method": "precise_reference_data"
+                "interpretation": gpt_interpretation
             }
         
         # General fallback for other birth data
@@ -294,11 +288,9 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                                f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
         
         return {
-            "status": "calculated",
             "chart": {k: {"rasi": v["rasi"], "nakshatra": v["nakshatra"], "pada": v["pada"]} 
                      for k, v in chart_data.items()},
-            "gpt_interpretation": gpt_interpretation,
-            "calculation_method": "fallback_astronomical"
+            "interpretation": gpt_interpretation
         }
         
     except Exception as e:
@@ -473,13 +465,8 @@ Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
                 
                 gpt_analysis = ask_gpt(gpt_prompt)
                 
-                return {
-                    "status": "success", 
-                    "life_purpose_analysis": analysis, 
-                    "traditional_report": report,
-                    "gpt_analysis": gpt_analysis,
-                    "calculation_method": "swiss_ephemeris_original"
-                }
+                # Return format matching original code
+                return {"interpretation": gpt_analysis}
             except Exception as e:
                 logger.warning(f"Life purpose calculation failed: {str(e)}")
         
@@ -501,12 +488,7 @@ Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
                 f"understanding, and helping others achieve their potential. Your soul's evolution comes through " \
                 f"taking responsibility and guiding others with compassion."
         
-        return {
-            "status": "calculated",
-            "life_purpose_analysis": analysis,
-            "report": report,
-            "calculation_method": "atmakaraka_analysis"
-        }
+        return {"interpretation": report}
         
     except Exception as e:
         logger.error(f"Error in life_purpose endpoint: {str(e)}")
@@ -577,13 +559,12 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
                 birth_info = {"dob": dob, "tob": tob, "place": f"lat:{lat}, lon:{lon}"}
                 gpt_analysis = ask_gpt_dasa_prediction(birth_info, dasa_table, data)
                 
+                # Return format matching original code
                 return {
-                    "status": "success", 
-                    "planet_positions": data,
-                    "current_maha_dasa": maha_dasa,
-                    "dasa_bhukti_table": bhukti_table,
-                    "gpt_analysis": gpt_analysis,
-                    "calculation_method": "swiss_ephemeris_original"
+                    "birth_info": {"dob": dob, "tob": tob, "place": f"Lat: {lat}, Lon: {lon}"},
+                    "planetary_positions": data,
+                    "dasa_table": bhukti_table,
+                    "gpt_prediction": gpt_analysis
                 }
             except Exception as e:
                 logger.warning(f"Dasa Bhukti calculation failed: {str(e)}")
@@ -607,10 +588,10 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
         }
         
         return {
-            "status": "calculated",
-            "dasa_bhukti_analysis": analysis,
-            "dasa_bhukti_table": bhukti_table,
-            "calculation_method": "vimshottari_bhukti"
+            "birth_info": {"dob": dob, "tob": tob, "place": f"Lat: {lat}, Lon: {lon}"},
+            "planetary_positions": {},
+            "dasa_table": bhukti_table,
+            "gpt_prediction": f"Dasa bhukti analysis for {dob} at {tob}"
         }
         
     except Exception as e:
@@ -646,12 +627,11 @@ Provide insights on spouse characteristics, marriage timing, relationship compat
                 
                 gpt_analysis = ask_gpt_spouse(gpt_prompt)
                 
+                # Return format matching original code
                 return {
-                    "status": "success", 
-                    "spouse_analysis": analysis, 
-                    "traditional_report": report,
-                    "gpt_analysis": gpt_analysis,
-                    "calculation_method": "swiss_ephemeris_original"
+                    "chart": data,
+                    "report": report,
+                    "interpretation": gpt_analysis
                 }
             except Exception as e:
                 logger.warning(f"Spouse analysis calculation failed: {str(e)}")
@@ -680,10 +660,9 @@ Provide insights on spouse characteristics, marriage timing, relationship compat
                 f"Spouse direction: {analysis['spouse_direction']} from your birthplace."
         
         return {
-            "status": "calculated",
-            "spouse_analysis": analysis,
+            "chart": {},
             "report": report,
-            "calculation_method": "7th_house_analysis"
+            "interpretation": f"Detailed spouse analysis for {gender} born on {dob} at {tob}"
         }
         
     except Exception as e:
