@@ -135,32 +135,36 @@ export default function Home() {
       const healthCheck = await fetch(`${backend}/health`).then(res => res.json());
       
       if (healthCheck.status === "healthy") {
-        // Get predictions from backend
-        const chartRes = await fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json());
+        // Get all data from backend in parallel
+        const promises = [
+          fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/career?${new URLSearchParams({ ...formData, gender: formData.gender })}`).then(res => res.json()),
+          fetch(`${backend}/dasa?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/yogas?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/life_purpose?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/dasa_bhukti?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/spouse?${new URLSearchParams({ ...formData, gender: formData.gender })}`).then(res => res.json()),
+          fetch(`${backend}/indu_dasa?${new URLSearchParams({ ...formData })}`).then(res => res.json())
+        ];
+
+        const [chartRes, careerRes, dasaRes, yogasRes, lifePurposeRes, dasaBhuktiRes, spouseRes, induDasaRes] = await Promise.all(promises);
         
+        // Set real data from backend
         setResult({
-          chart: {
-            Sun: { rasi: "Gemini", nakshatra: "Punarvasu", pada: "1" },
-            Moon: { rasi: "Scorpio", nakshatra: "Anuradha", pada: "3" },
-            Mars: { rasi: "Leo", nakshatra: "Magha", pada: "2" },
-            Mercury: { rasi: "Gemini", nakshatra: "Ardra", pada: "4" },
-            Jupiter: { rasi: "Pisces", nakshatra: "Revati", pada: "1" },
-            Venus: { rasi: "Taurus", nakshatra: "Rohini", pada: "2" },
-            Saturn: { rasi: "Aquarius", nakshatra: "Dhanishta", pada: "3" },
-            Rahu: { rasi: "Aries", nakshatra: "Bharani", pada: "1" },
-            Ketu: { rasi: "Libra", nakshatra: "Chitra", pada: "4" }
-          },
-          interpretation: chartRes.message || "Backend is online! Full astrological calculations are coming soon. The Swiss Ephemeris integration is in progress to provide accurate planetary positions and detailed cosmic interpretations."
+          chart: chartRes.chart || {},
+          interpretation: chartRes.interpretation || "Analysis in progress...",
+          status: chartRes.status,
+          calculation_method: chartRes.calculation_method
         });
         
-        // Set demo data for other features
-        setCareer("Career analysis feature is coming soon! This will include professional strengths, ideal career paths, and timing for career changes.");
-        setDasa([]);
-        setYogas(["Demo Yoga: This is where detected yogas will appear"]);
-        setLifePurpose("Life purpose analysis is coming soon! This will reveal your soul's journey and spiritual path.");
-        setDasaBhukti([]);
-        setSpouseAnalysis({ gender: "Coming soon", lagna: "Coming soon" });
-        setInduDasa({ indu_lagnam: "Coming soon" });
+        setCareer(careerRes.report || "Career analysis in progress...");
+        setDasa(dasaRes.dasa_timeline || []);
+        setYogas(yogasRes.yogas || []);
+        setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress...");
+        setDasaBhukti(dasaBhuktiRes.table || []);
+        setSpouseAnalysis(spouseRes.spouse_analysis || { gender: "Processing...", lagna: "Processing..." });
+        setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
+        
       } else {
         throw new Error("Backend not available");
       }
@@ -626,6 +630,11 @@ export default function Home() {
                       <h3 style={styles.tabHeader}>
                         <Moon size={18} color="#6366f1" />
                         Cosmic Interpretation
+                        {result.calculation_method && (
+                          <span style={{fontSize: '0.8rem', color: '#64748b', marginLeft: '8px'}}>
+                            ({result.calculation_method})
+                          </span>
+                        )}
                       </h3>
                       <div style={{
                         background: 'rgba(255, 255, 255, 0.9)',
@@ -643,6 +652,260 @@ export default function Home() {
                         }}>
                           {result.interpretation}
                         </p>
+                      </div>
+                    </>
+                  )}
+
+                  {activeTab === "career" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <Briefcase size={18} color="#8b5cf6" />
+                        Career Analysis
+                      </h3>
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        border: '1px solid rgba(139, 92, 246, 0.1)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                      }}>
+                        <p style={{
+                          color: '#374151',
+                          lineHeight: '1.6',
+                          fontSize: '1rem',
+                          margin: '0',
+                          whiteSpace: 'pre-line'
+                        }}>
+                          {career}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {activeTab === "dasa" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <Timeline size={18} color="#ef4444" />
+                        Vimshottari Dasa Timeline
+                      </h3>
+                      {dasa && dasa.length > 0 ? (
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={styles.table}>
+                            <thead>
+                              <tr>
+                                <th style={styles.tableHeader}>Planet</th>
+                                <th style={styles.tableHeader}>Start Age</th>
+                                <th style={styles.tableHeader}>End Age</th>
+                                <th style={styles.tableHeader}>Duration (Years)</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dasa.map((period, index) => (
+                                <tr key={index} style={styles.tableRow}>
+                                  <td style={{...styles.tableCell, fontWeight: '600'}}>{period.planet}</td>
+                                  <td style={styles.tableCell}>{period.start_age}</td>
+                                  <td style={styles.tableCell}>{period.end_age}</td>
+                                  <td style={styles.tableCell}>{period.years}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p style={{color: '#64748b'}}>Loading Dasa timeline...</p>
+                      )}
+                    </>
+                  )}
+
+                  {activeTab === "yogas" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <Zap size={18} color="#f59e0b" />
+                        Yogas & Doshas
+                      </h3>
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        border: '1px solid rgba(245, 158, 11, 0.1)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                      }}>
+                        {yogas && yogas.length > 0 ? (
+                          <ul style={{margin: 0, paddingLeft: '20px'}}>
+                            {yogas.map((yoga, index) => (
+                              <li key={index} style={{
+                                color: '#374151',
+                                lineHeight: '1.6',
+                                fontSize: '1rem',
+                                marginBottom: '12px'
+                              }}>
+                                {yoga}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p style={{color: '#64748b', margin: 0}}>Loading yoga analysis...</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {activeTab === "lifepurpose" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <Heart size={18} color="#ec4899" />
+                        Life Purpose Analysis
+                      </h3>
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        border: '1px solid rgba(236, 72, 153, 0.1)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                      }}>
+                        <p style={{
+                          color: '#374151',
+                          lineHeight: '1.6',
+                          fontSize: '1rem',
+                          margin: '0',
+                          whiteSpace: 'pre-line'
+                        }}>
+                          {lifePurpose}
+                        </p>
+                      </div>
+                    </>
+                  )}
+
+                  {activeTab === "dasabhukti" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <Calendar2 size={18} color="#06b6d4" />
+                        Dasa Bhukti Periods
+                      </h3>
+                      {dasaBhukti && dasaBhukti.length > 0 ? (
+                        <div style={{ overflowX: 'auto' }}>
+                          <table style={styles.table}>
+                            <thead>
+                              <tr>
+                                <th style={styles.tableHeader}>Period</th>
+                                <th style={styles.tableHeader}>Start</th>
+                                <th style={styles.tableHeader}>End</th>
+                                <th style={styles.tableHeader}>Duration</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {dasaBhukti.map((period, index) => (
+                                <tr key={index} style={styles.tableRow}>
+                                  <td style={{...styles.tableCell, fontWeight: '600'}}>
+                                    {period.maha_dasa}-{period.bhukti || period.planet}
+                                  </td>
+                                  <td style={styles.tableCell}>{period.start}</td>
+                                  <td style={styles.tableCell}>{period.end}</td>
+                                  <td style={styles.tableCell}>{period.months || period.duration} {period.months ? 'months' : 'units'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      ) : (
+                        <p style={{color: '#64748b'}}>Loading Dasa Bhukti periods...</p>
+                      )}
+                    </>
+                  )}
+
+                  {activeTab === "spouse" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <Heart size={18} color="#f43f5e" />
+                        Marriage & Spouse Analysis
+                      </h3>
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        border: '1px solid rgba(244, 63, 94, 0.1)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                      }}>
+                        {spouseAnalysis && Object.keys(spouseAnalysis).length > 0 ? (
+                          <div>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px'}}>
+                              <div><strong>Gender:</strong> {spouseAnalysis.gender}</div>
+                              <div><strong>Lagna:</strong> {spouseAnalysis.lagna}</div>
+                              <div><strong>7th House:</strong> {spouseAnalysis['7th_house_sign']}</div>
+                              <div><strong>7th Lord:</strong> {spouseAnalysis['7th_lord']}</div>
+                              <div><strong>Direction:</strong> {spouseAnalysis.spouse_direction}</div>
+                            </div>
+                            {spouseAnalysis.report && (
+                              <p style={{
+                                color: '#374151',
+                                lineHeight: '1.6',
+                                fontSize: '1rem',
+                                margin: '0',
+                                whiteSpace: 'pre-line'
+                              }}>
+                                {spouseAnalysis.report}
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p style={{color: '#64748b', margin: 0}}>Loading spouse analysis...</p>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {activeTab === "wealth" && (
+                    <>
+                      <h3 style={styles.tabHeader}>
+                        <DollarSign size={18} color="#10b981" />
+                        Indu Dasa - Wealth Timing
+                      </h3>
+                      <div style={{
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        borderRadius: '16px',
+                        padding: '24px',
+                        border: '1px solid rgba(16, 185, 129, 0.1)',
+                        boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                      }}>
+                        {induDasa && Object.keys(induDasa).length > 0 ? (
+                          <div>
+                            <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px', marginBottom: '20px'}}>
+                              <div><strong>Indu Lagna:</strong> {induDasa.indu_lagnam}</div>
+                              <div><strong>Indu Lord:</strong> {induDasa.indu_lord}</div>
+                              {induDasa.planets_in_indu_lagnam && (
+                                <div><strong>Planets in Indu:</strong> {induDasa.planets_in_indu_lagnam.join(', ')}</div>
+                              )}
+                            </div>
+                            {induDasa.timeline && induDasa.timeline.length > 0 && (
+                              <div style={{ overflowX: 'auto', marginTop: '20px' }}>
+                                <table style={styles.table}>
+                                  <thead>
+                                    <tr>
+                                      <th style={styles.tableHeader}>Period</th>
+                                      <th style={styles.tableHeader}>Start</th>
+                                      <th style={styles.tableHeader}>End</th>
+                                      <th style={styles.tableHeader}>Wealth Potential</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {induDasa.timeline.map((period, index) => (
+                                      <tr key={index} style={styles.tableRow}>
+                                        <td style={{...styles.tableCell, fontWeight: '600'}}>
+                                          {period.maha_dasa}-{period.bhukti}
+                                        </td>
+                                        <td style={styles.tableCell}>{period.start}</td>
+                                        <td style={styles.tableCell}>{period.end}</td>
+                                        <td style={styles.tableCell}>{period.wealth_potential}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <p style={{color: '#64748b', margin: 0}}>Loading wealth analysis...</p>
+                        )}
                       </div>
                     </>
                   )}
