@@ -104,6 +104,14 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('chart');
+  const [career, setCareer] = useState(null);
+  const [dasa, setDasa] = useState(null);
+  const [yogas, setYogas] = useState(null);
+  const [lifePurpose, setLifePurpose] = useState(null);
+  const [dasaBhukti, setDasaBhukti] = useState(null);
+  const [spouseAnalysis, setSpouseAnalysis] = useState(null);
+  const [induDasa, setInduDasa] = useState(null);
 
   // Backend URL - automatically detects environment
   const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
@@ -115,22 +123,52 @@ export default function Home() {
     setLoading(true);
     setError('');
     setResults(null);
+    setCareer(null);
+    setDasa(null);
+    setYogas(null);
+    setLifePurpose(null);
+    setDasaBhukti(null);
+    setSpouseAnalysis(null);
+    setInduDasa(null);
 
     try {
-      const response = await fetch(`${backend}/predict?${new URLSearchParams({
-        dob: formData.dob,
-        tob: formData.tob,
-        lat: formData.lat,
-        lon: formData.lon,
-        tz_offset: formData.tz_offset
-      })}`);
+      // Test backend connection first
+      const healthCheck = await fetch(`${backend}/health`).then(res => res.json());
+      
+      if (healthCheck.status === "healthy") {
+        // Get all data from backend in parallel
+        const promises = [
+          fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/career?${new URLSearchParams({ ...formData, gender: formData.gender })}`).then(res => res.json()),
+          fetch(`${backend}/dasa?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/yogas?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/life_purpose?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/dasa_bhukti?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
+          fetch(`${backend}/spouse?${new URLSearchParams({ ...formData, gender: formData.gender })}`).then(res => res.json()),
+          fetch(`${backend}/indu_dasa?${new URLSearchParams({ ...formData })}`).then(res => res.json())
+        ];
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const [chartRes, careerRes, dasaRes, yogasRes, lifePurposeRes, dasaBhuktiRes, spouseRes, induDasaRes] = await Promise.all(promises);
+        
+        // Set real data from backend
+        setResults({
+          chart: chartRes.chart || {},
+          interpretation: chartRes.interpretation || "Analysis in progress...",
+          status: chartRes.status,
+          calculation_method: chartRes.calculation_method
+        });
+        
+        setCareer(careerRes.report || "Career analysis in progress...");
+        setDasa(dasaRes.dasa_timeline || []);
+        setYogas(yogasRes.yogas || []);
+        setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress...");
+        setDasaBhukti(dasaBhuktiRes.table || []);
+        setSpouseAnalysis(spouseRes.spouse_analysis || { gender: "Processing...", lagna: "Processing..." });
+        setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
+        
+      } else {
+        throw new Error("Backend not available");
       }
-
-      const data = await response.json();
-      setResults(data);
     } catch (error) {
       setError(`Error: ${error.message}`);
     } finally {
@@ -167,6 +205,18 @@ export default function Home() {
       return <p key={index} style={{margin: '8px 0', lineHeight: '1.6'}}>{line}</p>;
     });
   };
+
+  const tabs = [
+    { key: "chart", label: "Planetary Chart", icon: Sun },
+    { key: "prediction", label: "Predictions", icon: Moon },
+    { key: "career", label: "Career Insights", icon: Briefcase },
+    { key: "dasa", label: "Dasa Timeline", icon: Timeline },
+    { key: "dasabhukti", label: "Dasa Bhukti", icon: Calendar },
+    { key: "yogas", label: "Yogas & Doshas", icon: Zap },
+    { key: "lifepurpose", label: "Life Purpose", icon: Heart },
+    { key: "spouse", label: "Spouse Analysis", icon: Heart },
+    { key: "wealth", label: "Wealth Cycles", icon: DollarSign },
+  ];
 
   return (
     <div style={{
@@ -374,58 +424,704 @@ export default function Home() {
                 Your Birth Chart Analysis
               </h2>
               
+              {/* Tab Buttons */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '15px',
-                marginBottom: '30px'
+                display: 'flex',
+                gap: '8px',
+                marginBottom: '24px',
+                flexWrap: 'wrap',
+                overflowX: 'auto',
+                padding: '4px'
               }}>
-                {Object.entries(results.chart || {}).map(([planet, data]) => (
-                  <div key={planet} style={{
-                    background: 'white',
-                    padding: '15px',
-                    borderRadius: '12px',
-                    border: '1px solid #e5e7eb',
-                    textAlign: 'center'
-                  }}>
-                    <div style={{
-                      fontSize: '1.2em',
-                      fontWeight: '600',
-                      color: '#374151',
-                      marginBottom: '5px'
-                    }}>
-                      {planet}
-                    </div>
-                    <div style={{color: '#6b7280', fontSize: '0.9em'}}>
-                      {data.rasi} • {data.nakshatra} Pada {data.pada}
-                    </div>
-                  </div>
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    onClick={() => setActiveTab(tab.key)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '12px 20px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease',
+                      fontSize: '0.9rem',
+                      whiteSpace: 'nowrap',
+                      minWidth: 'fit-content',
+                      ...(activeTab === tab.key ? {
+                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                        color: 'white',
+                        boxShadow: '0 4px 15px rgba(99, 102, 241, 0.4)',
+                        transform: 'scale(1.02)'
+                      } : {
+                        background: 'rgba(255, 255, 255, 0.7)',
+                        color: '#64748b',
+                        backdropFilter: 'blur(10px)'
+                      })
+                    }}
+                  >
+                    <tab.icon size={16} color={activeTab === tab.key ? "white" : "#64748b"} />
+                    {tab.label}
+                  </button>
                 ))}
               </div>
 
-              {results.interpretation && (
-                <div style={{
-                  background: 'white',
-                  padding: '25px',
-                  borderRadius: '12px',
-                  border: '1px solid #e5e7eb'
-                }}>
-                  <h3 style={{
-                    fontSize: '1.4em',
-                    margin: '0 0 15px 0',
-                    color: '#1f2937',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <Star size={20} color="#667eea" />
-                    Cosmic Interpretation
-                  </h3>
-                  <div style={{color: '#374151', lineHeight: '1.7'}}>
-                    {formatText(results.interpretation)}
-                  </div>
-                </div>
-              )}
+              {/* Tab Content */}
+              <div style={{
+                background: 'linear-gradient(135deg, #f8fafc, rgba(99, 102, 241, 0.05))',
+                borderRadius: '16px',
+                padding: '24px',
+                border: '1px solid #e2e8f0',
+                minHeight: '400px'
+              }}>
+                {activeTab === "chart" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Sun size={18} color="#f59e0b" />
+                      Planetary Positions
+                    </h3>
+                    <div style={{ overflowX: 'auto' }}>
+                      <table style={{
+                        width: '100%',
+                        borderCollapse: 'collapse',
+                        background: 'white',
+                        borderRadius: '12px',
+                        overflow: 'hidden',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                      }}>
+                        <thead>
+                          <tr>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Planet</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Rasi</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Nakshatra</th>
+                            <th style={{
+                              background: '#f1f5f9',
+                              fontWeight: '600',
+                              color: '#374151',
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              borderBottom: '1px solid #e2e8f0',
+                              fontSize: '0.9rem'
+                            }}>Pada</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {Object.entries(results.chart || {}).map(([planet, info]) => (
+                            <tr key={planet} style={{
+                              transition: 'background-color 0.2s ease'
+                            }}>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem',
+                                fontWeight: '600'
+                              }}>{planet}</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
+                              }}>{info.rasi}</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
+                              }}>{info.nakshatra}</td>
+                              <td style={{
+                                padding: '12px 16px',
+                                borderBottom: '1px solid #f1f5f9',
+                                color: '#4b5563',
+                                fontSize: '0.9rem'
+                              }}>{info.pada}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "prediction" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Moon size={18} color="#6366f1" />
+                      Cosmic Interpretation
+                      {results.calculation_method && (
+                        <span style={{fontSize: '0.8rem', color: '#64748b', marginLeft: '8px'}}>
+                          ({results.calculation_method})
+                        </span>
+                      )}
+                    </h3>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      border: '1px solid rgba(99, 102, 241, 0.1)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                    }}>
+                      <div style={{
+                        color: '#374151',
+                        lineHeight: '1.6',
+                        fontSize: '1rem',
+                        margin: '0',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {formatText(results.interpretation)}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "career" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Briefcase size={18} color="#8b5cf6" />
+                      Career Analysis
+                    </h3>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      border: '1px solid rgba(139, 92, 246, 0.1)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                    }}>
+                      <div style={{
+                        color: '#374151',
+                        lineHeight: '1.6',
+                        fontSize: '1rem',
+                        margin: '0',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {formatText(career)}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "dasa" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Timeline size={18} color="#ef4444" />
+                      Vimshottari Dasa Timeline
+                    </h3>
+                    {dasa && dasa.length > 0 ? (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{
+                          width: '100%',
+                          borderCollapse: 'collapse',
+                          background: 'white',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                        }}>
+                          <thead>
+                            <tr>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>Planet</th>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>Start Age</th>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>End Age</th>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>Duration (Years)</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {dasa.map((period, index) => (
+                              <tr key={index} style={{
+                                transition: 'background-color 0.2s ease'
+                              }}>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem',
+                                  fontWeight: '600'
+                                }}>{period.planet}</td>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem'
+                                }}>{period.start_age}</td>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem'
+                                }}>{period.end_age}</td>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem'
+                                }}>{period.years}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p style={{color: '#64748b'}}>Loading Dasa timeline...</p>
+                    )}
+                  </>
+                )}
+
+                {activeTab === "yogas" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Zap size={18} color="#f59e0b" />
+                      Yogas & Doshas
+                    </h3>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      border: '1px solid rgba(245, 158, 11, 0.1)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                    }}>
+                      {yogas && yogas.length > 0 ? (
+                        <ul style={{margin: 0, paddingLeft: '20px'}}>
+                          {yogas.map((yoga, index) => (
+                            <li key={index} style={{
+                              color: '#374151',
+                              lineHeight: '1.6',
+                              fontSize: '1rem',
+                              marginBottom: '12px'
+                            }}>
+                              {yoga}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p style={{color: '#64748b', margin: 0}}>Loading yoga analysis...</p>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "lifepurpose" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Heart size={18} color="#ec4899" />
+                      Life Purpose Analysis
+                    </h3>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      border: '1px solid rgba(236, 72, 153, 0.1)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                    }}>
+                      <div style={{
+                        color: '#374151',
+                        lineHeight: '1.6',
+                        fontSize: '1rem',
+                        margin: '0',
+                        whiteSpace: 'pre-line'
+                      }}>
+                        {formatText(lifePurpose)}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "dasabhukti" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Calendar size={18} color="#06b6d4" />
+                      Dasa Bhukti Periods
+                    </h3>
+                    {dasaBhukti && dasaBhukti.length > 0 ? (
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{
+                          width: '100%',
+                          borderCollapse: 'collapse',
+                          background: 'white',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                        }}>
+                          <thead>
+                            <tr>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>Period</th>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>Start</th>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>End</th>
+                              <th style={{
+                                background: '#f1f5f9',
+                                fontWeight: '600',
+                                color: '#374151',
+                                padding: '12px 16px',
+                                textAlign: 'left',
+                                borderBottom: '1px solid #e2e8f0',
+                                fontSize: '0.9rem'
+                              }}>Duration</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {dasaBhukti.map((period, index) => (
+                              <tr key={index} style={{
+                                transition: 'background-color 0.2s ease'
+                              }}>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem',
+                                  fontWeight: '600'
+                                }}>
+                                  {period.maha_dasa}-{period.bhukti || period.planet}
+                                </td>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem'
+                                }}>{period.start}</td>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem'
+                                }}>{period.end}</td>
+                                <td style={{
+                                  padding: '12px 16px',
+                                  borderBottom: '1px solid #f1f5f9',
+                                  color: '#4b5563',
+                                  fontSize: '0.9rem'
+                                }}>{period.months || period.duration} {period.months ? 'months' : 'units'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p style={{color: '#64748b'}}>Loading Dasa Bhukti periods...</p>
+                    )}
+                  </>
+                )}
+
+                {activeTab === "spouse" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <Heart size={18} color="#f43f5e" />
+                      Marriage & Spouse Analysis
+                    </h3>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      border: '1px solid rgba(244, 63, 94, 0.1)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                    }}>
+                      {spouseAnalysis && Object.keys(spouseAnalysis).length > 0 ? (
+                        <div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
+                            marginBottom: '20px'
+                          }}>
+                            <div><strong>Gender:</strong> {spouseAnalysis.gender}</div>
+                            <div><strong>Lagna:</strong> {spouseAnalysis.lagna}</div>
+                            <div><strong>7th House:</strong> {spouseAnalysis['7th_house_sign']}</div>
+                            <div><strong>7th Lord:</strong> {spouseAnalysis['7th_lord']}</div>
+                            <div><strong>Direction:</strong> {spouseAnalysis.spouse_direction}</div>
+                          </div>
+                          {spouseAnalysis.report && (
+                            <div style={{
+                              color: '#374151',
+                              lineHeight: '1.6',
+                              fontSize: '1rem',
+                              margin: '0',
+                              whiteSpace: 'pre-line'
+                            }}>
+                              {formatText(spouseAnalysis.report)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p style={{color: '#64748b', margin: 0}}>Loading spouse analysis...</p>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {activeTab === "wealth" && (
+                  <>
+                    <h3 style={{
+                      fontSize: '1.25rem',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      marginBottom: '20px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}>
+                      <DollarSign size={18} color="#10b981" />
+                      Indu Dasa - Wealth Timing
+                    </h3>
+                    <div style={{
+                      background: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '16px',
+                      padding: '24px',
+                      border: '1px solid rgba(16, 185, 129, 0.1)',
+                      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.05)'
+                    }}>
+                      {induDasa && Object.keys(induDasa).length > 0 ? (
+                        <div>
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                            gap: '16px',
+                            marginBottom: '20px'
+                          }}>
+                            <div><strong>Indu Lagna:</strong> {induDasa.indu_lagnam}</div>
+                            <div><strong>Indu Lord:</strong> {induDasa.indu_lord}</div>
+                            {induDasa.planets_in_indu_lagnam && (
+                              <div><strong>Planets in Indu:</strong> {induDasa.planets_in_indu_lagnam.join(', ')}</div>
+                            )}
+                          </div>
+                          {induDasa.timeline && induDasa.timeline.length > 0 && (
+                            <div style={{ overflowX: 'auto', marginTop: '20px' }}>
+                              <table style={{
+                                width: '100%',
+                                borderCollapse: 'collapse',
+                                background: 'white',
+                                borderRadius: '12px',
+                                overflow: 'hidden',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                              }}>
+                                <thead>
+                                  <tr>
+                                    <th style={{
+                                      background: '#f1f5f9',
+                                      fontWeight: '600',
+                                      color: '#374151',
+                                      padding: '12px 16px',
+                                      textAlign: 'left',
+                                      borderBottom: '1px solid #e2e8f0',
+                                      fontSize: '0.9rem'
+                                    }}>Period</th>
+                                    <th style={{
+                                      background: '#f1f5f9',
+                                      fontWeight: '600',
+                                      color: '#374151',
+                                      padding: '12px 16px',
+                                      textAlign: 'left',
+                                      borderBottom: '1px solid #e2e8f0',
+                                      fontSize: '0.9rem'
+                                    }}>Start</th>
+                                    <th style={{
+                                      background: '#f1f5f9',
+                                      fontWeight: '600',
+                                      color: '#374151',
+                                      padding: '12px 16px',
+                                      textAlign: 'left',
+                                      borderBottom: '1px solid #e2e8f0',
+                                      fontSize: '0.9rem'
+                                    }}>End</th>
+                                    <th style={{
+                                      background: '#f1f5f9',
+                                      fontWeight: '600',
+                                      color: '#374151',
+                                      padding: '12px 16px',
+                                      textAlign: 'left',
+                                      borderBottom: '1px solid #e2e8f0',
+                                      fontSize: '0.9rem'
+                                    }}>Wealth Potential</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {induDasa.timeline.map((period, index) => (
+                                    <tr key={index} style={{
+                                      transition: 'background-color 0.2s ease'
+                                    }}>
+                                      <td style={{
+                                        padding: '12px 16px',
+                                        borderBottom: '1px solid #f1f5f9',
+                                        color: '#4b5563',
+                                        fontSize: '0.9rem',
+                                        fontWeight: '600'
+                                      }}>
+                                        {period.maha_dasa}-{period.bhukti}
+                                      </td>
+                                      <td style={{
+                                        padding: '12px 16px',
+                                        borderBottom: '1px solid #f1f5f9',
+                                        color: '#4b5563',
+                                        fontSize: '0.9rem'
+                                      }}>{period.start}</td>
+                                      <td style={{
+                                        padding: '12px 16px',
+                                        borderBottom: '1px solid #f1f5f9',
+                                        color: '#4b5563',
+                                        fontSize: '0.9rem'
+                                      }}>{period.end}</td>
+                                      <td style={{
+                                        padding: '12px 16px',
+                                        borderBottom: '1px solid #f1f5f9',
+                                        color: '#4b5563',
+                                        fontSize: '0.9rem'
+                                      }}>{period.wealth_potential}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <p style={{color: '#64748b', margin: 0}}>Loading wealth analysis...</p>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         )}
