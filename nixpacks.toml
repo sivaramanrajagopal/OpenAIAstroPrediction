@@ -2,10 +2,14 @@
 NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.setup]
-nixPkgs = ["python311", "python311Packages.pip"]
+nixPkgs = ["python311", "python311Packages.pip", "gcc", "pkg-config"]
 
 [phases.install]
-cmds = ["python -m pip install -r requirements.txt"]
+cmds = [
+  "python -m pip install --upgrade pip",
+  "python -m pip install wheel setuptools",
+  "python -m pip install -r requirements.txt"
+]
 
 [start]
 cmd = "python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
