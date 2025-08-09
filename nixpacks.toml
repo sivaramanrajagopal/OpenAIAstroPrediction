@@ -1,6 +1,10 @@
 [variables]
 NIXPACKS_PYTHON_VERSION = "3.11"
 
+[providers]
+python = true
+nodejs = false
+
 [phases.setup]
 nixPkgs = [
   "python311",
