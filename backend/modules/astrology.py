@@ -11,11 +11,7 @@ load_dotenv()
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-# Set ephemeris path and sidereal mode
-import os
-ephe_path = os.path.join(os.path.dirname(__file__), '..', 'ephe')
-print(f"Setting ephemeris path to: {ephe_path}")
-swe.set_ephe_path(ephe_path)  # Use absolute path to ephe directory
+# Set sidereal mode only
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # 27 Nakshatras and 12 Rasis
