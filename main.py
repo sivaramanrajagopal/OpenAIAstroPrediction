@@ -74,7 +74,8 @@ def fallback_planet_positions(jd, lat, lon):
     def calculate_nakshatra(longitude):
         """Calculate nakshatra and pada from longitude"""
         nakshatra_index = int((longitude % 360) // (360 / 27))
-        pada = int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
+        nakshatra_longitude = (longitude % 360) % (360 / 27)
+        pada = int(nakshatra_longitude // (360 / 27 / 4)) + 1
         return nakshatras[nakshatra_index], pada
     
     def calculate_rasi(longitude):
