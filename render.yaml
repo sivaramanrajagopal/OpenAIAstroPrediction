@@ -3,7 +3,7 @@ services:
     name: vedic-astrology-api
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python main.py
+    startCommand: cd backend && python main.py
     healthCheckPath: /health
     envVars:
       - key: PORT
