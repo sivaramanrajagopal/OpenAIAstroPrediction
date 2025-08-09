@@ -210,7 +210,7 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.info(f"Predict endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
         # Try original Swiss Ephemeris calculations first
-        if MODULES_AVAILABLE:
+        if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
                 prompt = generate_gpt_prompt(data)
@@ -222,7 +222,7 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                     "calculation_method": "original_swiss_ephemeris"
                 }
             except Exception as e:
-                logger.warning(f"Original Swiss Ephemeris calculation failed: {str(e)}")
+                logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":
@@ -528,8 +528,50 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
                 data, asc_deg, cusps = get_dasa_bhukti_planet_positions(jd, lat, lon)
                 moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
                 
-                # Generate proper dasa table with bhukti periods
+                # Generate dasa table and then calculate bhukti periods  
                 dasa_table = generate_dasa_bhukti_table(jd, moon_longitude)
+                
+                # Create bhukti periods for the current dasa
+                current_year = datetime.datetime.now().year
+                birth_year = int(dob.split('-')[0])
+                current_age = current_year - birth_year
+                
+                # Find current running dasa
+                current_dasa = None
+                for period in dasa_table:
+                    if period["start_age"] <= current_age <= period["end_age"]:
+                        current_dasa = period
+                        break
+                
+                if not current_dasa:
+                    current_dasa = dasa_table[0] if dasa_table else {"planet": "Sun", "duration": 6}
+                
+                # Generate bhukti periods within the current maha dasa
+                maha_dasa = current_dasa["planet"]
+                dasa_duration = current_dasa.get("duration", 6)
+                
+                # Bhukti order and proportional durations
+                bhukti_order = ["Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury", "Ketu", "Venus"]
+                bhukti_durations = {"Sun": 0.36, "Moon": 0.60, "Mars": 0.42, "Rahu": 1.08, "Jupiter": 0.96, "Saturn": 1.14, "Mercury": 1.02, "Ketu": 0.42, "Venus": 1.20}
+                
+                bhukti_table = []
+                start_date = datetime.datetime.strptime(current_dasa.get("start_date", f"{current_year}-01-01"), "%Y-%m-%d")
+                
+                for bhukti_planet in bhukti_order:
+                    bhukti_duration_years = bhukti_durations[bhukti_planet] * (dasa_duration / sum(bhukti_durations.values()))
+                    end_date = start_date + datetime.timedelta(days=bhukti_duration_years * 365.25)
+                    
+                    bhukti_table.append({
+                        "maha_dasa": maha_dasa,
+                        "bhukti": bhukti_planet,
+                        "start_date": start_date.strftime("%Y-%m-%d"),
+                        "end_date": end_date.strftime("%Y-%m-%d"),
+                        "duration": round(bhukti_duration_years, 2)
+                    })
+                    
+                    start_date = end_date
+                    if len(bhukti_table) >= 9:  # Limit to 9 bhukti periods
+                        break
                 
                 # Generate GPT analysis
                 birth_info = {"dob": dob, "tob": tob, "place": f"lat:{lat}, lon:{lon}"}
@@ -538,7 +580,8 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
                 return {
                     "status": "success", 
                     "planet_positions": data,
-                    "dasa_bhukti_table": dasa_table,
+                    "current_maha_dasa": maha_dasa,
+                    "dasa_bhukti_table": bhukti_table,
                     "gpt_analysis": gpt_analysis,
                     "calculation_method": "swiss_ephemeris_original"
                 }
