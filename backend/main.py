@@ -218,7 +218,7 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 return {
                     "status": "success",
                     "chart": data, 
-                    "interpretation": interpretation,
+                    "gpt_interpretation": interpretation,
                     "calculation_method": "original_swiss_ephemeris"
                 }
             except Exception as e:
@@ -238,19 +238,33 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 "Ketu": {"longitude": 333.18, "rasi": "Meena", "nakshatra": "Purva Bhadrapada", "pada": 4}
             }
             
-            interpretation = f"✨ Precise Vedic Analysis for {dob} at {tob} (Chennai: {lat}°, {lon}°)\n\n" \
-                            f"Your birth chart reveals fascinating cosmic alignments. Sun at 151.66° in Kanni (Uttara Phalguni nakshatra, Pada 2) " \
-                            f"indicates strong analytical abilities, perfectionist nature, and success through service and helping others.\n\n" \
-                            f"Moon at 354.14° in Meena (Revati nakshatra, Pada 3) shows deep emotional intelligence, spiritual inclinations, " \
-                            f"and natural healing abilities. This Moon position brings success in travel, foreign connections, and creative pursuits.\n\n" \
-                            f"The combination of Sun in Kanni and Moon in Meena creates a person who is both practical and spiritual, " \
-                            f"with excellent problem-solving abilities and a compassionate nature."
+            # Use GPT for better analysis even with fallback data
+            try:
+                if MODULES_AVAILABLE:
+                    prompt = generate_gpt_prompt(chart_data)
+                    gpt_interpretation = get_astrology_interpretation(prompt)
+                else:
+                    gpt_interpretation = f"✨ Precise Vedic Analysis for {dob} at {tob} (Chennai: {lat}°, {lon}°)\n\n" \
+                                       f"Your birth chart reveals fascinating cosmic alignments. Sun at 151.66° in Kanni (Uttara Phalguni nakshatra, Pada 2) " \
+                                       f"indicates strong analytical abilities, perfectionist nature, and success through service and helping others.\n\n" \
+                                       f"Moon at 354.14° in Meena (Revati nakshatra, Pada 3) shows deep emotional intelligence, spiritual inclinations, " \
+                                       f"and natural healing abilities. This Moon position brings success in travel, foreign connections, and creative pursuits.\n\n" \
+                                       f"The combination of Sun in Kanni and Moon in Meena creates a person who is both practical and spiritual, " \
+                                       f"with excellent problem-solving abilities and a compassionate nature."
+            except:
+                gpt_interpretation = f"✨ Precise Vedic Analysis for {dob} at {tob} (Chennai: {lat}°, {lon}°)\n\n" \
+                                   f"Your birth chart reveals fascinating cosmic alignments. Sun at 151.66° in Kanni (Uttara Phalguni nakshatra, Pada 2) " \
+                                   f"indicates strong analytical abilities, perfectionist nature, and success through service and helping others.\n\n" \
+                                   f"Moon at 354.14° in Meena (Revati nakshatra, Pada 3) shows deep emotional intelligence, spiritual inclinations, " \
+                                   f"and natural healing abilities. This Moon position brings success in travel, foreign connections, and creative pursuits.\n\n" \
+                                   f"The combination of Sun in Kanni and Moon in Meena creates a person who is both practical and spiritual, " \
+                                   f"with excellent problem-solving abilities and a compassionate nature."
             
             return {
                 "status": "calculated",
                 "chart": {k: {"rasi": v["rasi"], "nakshatra": v["nakshatra"], "pada": v["pada"]} 
                          for k, v in chart_data.items()},
-                "interpretation": interpretation,
+                "gpt_interpretation": gpt_interpretation,
                 "calculation_method": "precise_reference_data"
             }
         
@@ -261,17 +275,29 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         
         chart_data = fallback_planet_positions(jd, lat, lon)
         
-        interpretation = f"✨ Vedic Analysis for {dob} at {tob} (Location: {lat}°, {lon}°)\n\n" \
-                        f"Your birth chart shows significant planetary alignments. The Sun in {chart_data['Sun']['rasi']} " \
-                        f"indicates strong analytical abilities and attention to detail. Moon in {chart_data['Moon']['rasi']} " \
-                        f"suggests a balanced and harmonious nature with excellent relationship skills.\n\n" \
-                        f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
+        # Try GPT analysis for fallback data too
+        try:
+            if MODULES_AVAILABLE:
+                prompt = generate_gpt_prompt(chart_data)
+                gpt_interpretation = get_astrology_interpretation(prompt)
+            else:
+                gpt_interpretation = f"✨ Vedic Analysis for {dob} at {tob} (Location: {lat}°, {lon}°)\n\n" \
+                                   f"Your birth chart shows significant planetary alignments. The Sun in {chart_data['Sun']['rasi']} " \
+                                   f"indicates strong analytical abilities and attention to detail. Moon in {chart_data['Moon']['rasi']} " \
+                                   f"suggests a balanced and harmonious nature with excellent relationship skills.\n\n" \
+                                   f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
+        except:
+            gpt_interpretation = f"✨ Vedic Analysis for {dob} at {tob} (Location: {lat}°, {lon}°)\n\n" \
+                               f"Your birth chart shows significant planetary alignments. The Sun in {chart_data['Sun']['rasi']} " \
+                               f"indicates strong analytical abilities and attention to detail. Moon in {chart_data['Moon']['rasi']} " \
+                               f"suggests a balanced and harmonious nature with excellent relationship skills.\n\n" \
+                               f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
         
         return {
             "status": "calculated",
             "chart": {k: {"rasi": v["rasi"], "nakshatra": v["nakshatra"], "pada": v["pada"]} 
                      for k, v in chart_data.items()},
-            "interpretation": interpretation,
+            "gpt_interpretation": gpt_interpretation,
             "calculation_method": "fallback_astronomical"
         }
         
@@ -345,8 +371,17 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
                 swe.set_topo(lon, lat, 0)
                 moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
-                data = generate_dasa_table(jd, moon_longitude)
-                return {"status": "success", "dasa_timeline": data, "calculation_method": "swiss_ephemeris"}
+                
+                # Use the original function that returns nakshatra, pada, and dasa_table with durations
+                nakshatra, pada, dasa_table = generate_dasa_table(jd, moon_longitude)
+                
+                return {
+                    "status": "success", 
+                    "birth_nakshatra": nakshatra,
+                    "birth_pada": pada,
+                    "dasa_timeline": dasa_table, 
+                    "calculation_method": "swiss_ephemeris_original"
+                }
             except Exception as e:
                 logger.warning(f"Dasa calculation failed: {str(e)}")
         
@@ -356,11 +391,11 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         age = current_year - birth_year
         
         dasa_timeline = [
-            {"planet": "Sun", "start_age": max(0, age-10), "end_age": age+6, "years": 6},
-            {"planet": "Moon", "start_age": age+6, "end_age": age+16, "years": 10},
-            {"planet": "Mars", "start_age": age+16, "end_age": age+23, "years": 7},
-            {"planet": "Rahu", "start_age": age+23, "end_age": age+41, "years": 18},
-            {"planet": "Jupiter", "start_age": age+41, "end_age": age+57, "years": 16}
+            {"planet": "Sun", "start_age": max(0, age-10), "end_age": age+6, "duration": 6},
+            {"planet": "Moon", "start_age": age+6, "end_age": age+16, "duration": 10},
+            {"planet": "Mars", "start_age": age+16, "end_age": age+23, "duration": 7},
+            {"planet": "Rahu", "start_age": age+23, "end_age": age+41, "duration": 18},
+            {"planet": "Jupiter", "start_age": age+41, "end_age": age+57, "duration": 16}
         ]
         
         return {
@@ -422,10 +457,29 @@ def life_purpose(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 
                 utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
                 jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
                 
+                # Get planet positions and analysis
                 data, asc_deg, cusps = get_life_purpose_planet_positions(jd, lat, lon)
                 analysis = analyze_life_purpose(data, asc_deg, cusps)
                 report = generate_purpose_report(analysis, data)
-                return {"status": "success", "life_purpose_analysis": analysis, "report": report, "calculation_method": "swiss_ephemeris"}
+                
+                # Generate GPT analysis using the ask_gpt function from life_purpose module
+                gpt_prompt = f"""Analyze the life purpose for birth details: {dob} at {tob}, Location: {lat}°, {lon}°
+                
+Planetary positions: {data}
+Astrological analysis: {analysis}
+Traditional report: {report}
+
+Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
+                
+                gpt_analysis = ask_gpt(gpt_prompt)
+                
+                return {
+                    "status": "success", 
+                    "life_purpose_analysis": analysis, 
+                    "traditional_report": report,
+                    "gpt_analysis": gpt_analysis,
+                    "calculation_method": "swiss_ephemeris_original"
+                }
             except Exception as e:
                 logger.warning(f"Life purpose calculation failed: {str(e)}")
         
@@ -470,10 +524,24 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
                 utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
                 jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
                 
+                # Get planet positions and moon longitude
                 data, asc_deg, cusps = get_dasa_bhukti_planet_positions(jd, lat, lon)
                 moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
-                table = generate_dasa_bhukti_table(jd, moon_longitude)
-                return {"status": "success", "dasa_bhukti_analysis": data, "table": table, "calculation_method": "swiss_ephemeris"}
+                
+                # Generate proper dasa table with bhukti periods
+                dasa_table = generate_dasa_bhukti_table(jd, moon_longitude)
+                
+                # Generate GPT analysis
+                birth_info = {"dob": dob, "tob": tob, "place": f"lat:{lat}, lon:{lon}"}
+                gpt_analysis = ask_gpt_dasa_prediction(birth_info, dasa_table, data)
+                
+                return {
+                    "status": "success", 
+                    "planet_positions": data,
+                    "dasa_bhukti_table": dasa_table,
+                    "gpt_analysis": gpt_analysis,
+                    "calculation_method": "swiss_ephemeris_original"
+                }
             except Exception as e:
                 logger.warning(f"Dasa Bhukti calculation failed: {str(e)}")
         
@@ -481,11 +549,11 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
         current_date = datetime.datetime.now()
         
         bhukti_table = [
-            {"maha_dasa": "Sun", "bhukti": "Sun", "start": "2024-01-01", "end": "2024-04-01", "months": 3.6},
-            {"maha_dasa": "Sun", "bhukti": "Moon", "start": "2024-04-01", "end": "2024-10-01", "months": 6},
-            {"maha_dasa": "Sun", "bhukti": "Mars", "start": "2024-10-01", "end": "2025-02-01", "months": 4.2},
-            {"maha_dasa": "Sun", "bhukti": "Rahu", "start": "2025-02-01", "end": "2025-12-01", "months": 10.8},
-            {"maha_dasa": "Moon", "bhukti": "Moon", "start": "2026-01-01", "end": "2026-11-01", "months": 10}
+            {"maha_dasa": "Sun", "bhukti": "Sun", "start_date": "2024-01-01", "end_date": "2024-04-01", "duration": 3.6},
+            {"maha_dasa": "Sun", "bhukti": "Moon", "start_date": "2024-04-01", "end_date": "2024-10-01", "duration": 6},
+            {"maha_dasa": "Sun", "bhukti": "Mars", "start_date": "2024-10-01", "end_date": "2025-02-01", "duration": 4.2},
+            {"maha_dasa": "Sun", "bhukti": "Rahu", "start_date": "2025-02-01", "end_date": "2025-12-01", "duration": 10.8},
+            {"maha_dasa": "Moon", "bhukti": "Moon", "start_date": "2026-01-01", "end_date": "2026-11-01", "duration": 10}
         ]
         
         analysis = {
@@ -498,7 +566,7 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
         return {
             "status": "calculated",
             "dasa_bhukti_analysis": analysis,
-            "table": bhukti_table,
+            "dasa_bhukti_table": bhukti_table,
             "calculation_method": "vimshottari_bhukti"
         }
         
@@ -518,11 +586,30 @@ def spouse(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, g
                 utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
                 jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
                 
+                # Get planet positions and analysis
                 data, asc_deg = get_spouse_planet_positions(jd, lat, lon)
                 aspects = get_aspects(data, asc_deg)
                 analysis = analyze_marriage(data, asc_deg, aspects, gender)
                 report = generate_report(analysis)
-                return {"status": "success", "spouse_analysis": analysis, "report": report, "calculation_method": "swiss_ephemeris"}
+                
+                # Generate GPT analysis using the ask_gpt_spouse function from spouse_analysis module
+                gpt_prompt = f"""Analyze marriage prospects for {gender} born {dob} at {tob}, Location: {lat}°, {lon}°
+                
+Planetary positions: {data}
+Marriage analysis: {analysis}
+Traditional report: {report}
+
+Provide insights on spouse characteristics, marriage timing, relationship compatibility, and remedies."""
+                
+                gpt_analysis = ask_gpt_spouse(gpt_prompt)
+                
+                return {
+                    "status": "success", 
+                    "spouse_analysis": analysis, 
+                    "traditional_report": report,
+                    "gpt_analysis": gpt_analysis,
+                    "calculation_method": "swiss_ephemeris_original"
+                }
             except Exception as e:
                 logger.warning(f"Spouse analysis calculation failed: {str(e)}")
         
