@@ -27,16 +27,40 @@ rasis = [
     "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"
 ]
 
+# Rasi Lords mapping
+rasi_lords = {
+    "Mesha": "Mars", "Rishaba": "Venus", "Mithuna": "Mercury", "Kataka": "Moon",
+    "Simha": "Sun", "Kanni": "Mercury", "Thula": "Venus", "Vrischika": "Mars",
+    "Dhanus": "Jupiter", "Makara": "Saturn", "Kumbha": "Saturn", "Meena": "Jupiter"
+}
+
+# Nakshatra Lords mapping (9-fold division)
+nakshatra_lords = [
+    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"
+]
 
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
+    longitude = longitude % 360
+    rasi_index = int(longitude // 30)
+    nakshatra_index = int(longitude // (360 / 27))
+    pada = int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
+    
+    rasi = rasis[rasi_index]
+    nakshatra = nakshatras[nakshatra_index]
+    rasi_lord = rasi_lords[rasi]
+    nakshatra_lord = nakshatra_lords[nakshatra_index % 9]
+    degrees_in_rasi = longitude % 30
+    
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
-        'rasi': rasis[int(longitude // 30)],
-        'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
-        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
+        'rasi': rasi,
+        'rasi_lord': rasi_lord,
+        'nakshatra': nakshatra,
+        'nakshatra_lord': nakshatra_lord,
+        'pada': pada,
+        'degrees_in_rasi': degrees_in_rasi
     }
 
 
@@ -77,12 +101,12 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
             print(f"DEBUG: Moon longitude (geocentric): {lonlat_geo[0]}")
             print(f"DEBUG: Difference: {lonlat[0] - lonlat_geo[0]}")
 
-    # Rahu & Ketu
+    # Rahu & Ketu - True Node
     rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
     results['Rahu'] = get_chart_info(rahu[0], rahu[3])
     ketu_lon = (rahu[0] + 180.0) % 360.0
     ketu_info = get_chart_info(ketu_lon, rahu[3])
-    ketu_info['retrograde'] = True
+    ketu_info['retrograde'] = True  # Ketu is always retrograde
     results['Ketu'] = ketu_info
 
     # Ascendant & Houses
@@ -98,10 +122,13 @@ def generate_gpt_prompt(data):
         "Please provide interpretation in 4 sections:\n1. Personality\n2. Career\n3. Relationships\n4. Remedies\n"
     )
     for body, info in data.items():
-        line = f"- {body}: {info['rasi']}, {info['nakshatra']} Pada {info['pada']}"
-        if info.get("retrograde"):
-            line += " (Retrograde)"
-        lines.append(line)
+        retrograde = "Retrograde" if info['retrograde'] else "Direct"
+        lines.append(
+            f"{body}: {info['longitude']:.2f}° ({retrograde}) | "
+            f"{info['rasi']} (Lord: {info['rasi_lord']}) | "
+            f"{info['nakshatra']} (Lord: {info['nakshatra_lord']}) | "
+            f"Pada {info['pada']} | {info['degrees_in_rasi']:.2f}° in {info['rasi']}"
+        )
     return "\n".join(lines)
 
 

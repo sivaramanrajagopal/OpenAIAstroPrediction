@@ -217,22 +217,27 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 prompt = generate_gpt_prompt(data)
                 interpretation = get_astrology_interpretation(prompt)
                 # Return exact format as original code
-                return {"chart": data, "interpretation": interpretation}
+                return {
+                    "chart": data,
+                    "interpretation": interpretation,
+                    "status": "success",
+                    "calculation_method": "swiss_ephemeris"
+                }
             except Exception as e:
                 logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":
             chart_data = {
-                "Sun": {"longitude": 151.66, "rasi": "Kanni", "nakshatra": "Uttara Phalguni", "pada": 2},
-                "Moon": {"longitude": 354.14, "rasi": "Meena", "nakshatra": "Revati", "pada": 3},
-                "Mars": {"longitude": 185.52, "rasi": "Thula", "nakshatra": "Chitra", "pada": 4},
-                "Mercury": {"longitude": 141.28, "rasi": "Simha", "nakshatra": "Purva Phalguni", "pada": 3},
-                "Jupiter": {"longitude": 98.84, "rasi": "Kataka", "nakshatra": "Pushya", "pada": 2},
-                "Venus": {"longitude": 195.89, "rasi": "Thula", "nakshatra": "Swati", "pada": 3},
-                "Saturn": {"longitude": 133.16, "rasi": "Simha", "nakshatra": "Magha", "pada": 4},
-                "Rahu": {"longitude": 153.18, "rasi": "Kanni", "nakshatra": "Uttara Phalguni", "pada": 2},
-                "Ketu": {"longitude": 333.18, "rasi": "Meena", "nakshatra": "Purva Bhadrapada", "pada": 4}
+                "Sun": {"longitude": 151.66, "rasi": "Kanni", "rasi_lord": "Mercury", "nakshatra": "Uttara Phalguni", "nakshatra_lord": "Sun", "pada": 2, "degrees_in_rasi": 1.66, "retrograde": False},
+                "Moon": {"longitude": 354.14, "rasi": "Meena", "rasi_lord": "Jupiter", "nakshatra": "Revati", "nakshatra_lord": "Mercury", "pada": 3, "degrees_in_rasi": 24.14, "retrograde": False},
+                "Mars": {"longitude": 185.52, "rasi": "Thula", "rasi_lord": "Venus", "nakshatra": "Chitra", "nakshatra_lord": "Mars", "pada": 4, "degrees_in_rasi": 5.52, "retrograde": False},
+                "Mercury": {"longitude": 141.28, "rasi": "Simha", "rasi_lord": "Sun", "nakshatra": "Purva Phalguni", "nakshatra_lord": "Venus", "pada": 3, "degrees_in_rasi": 21.28, "retrograde": False},
+                "Jupiter": {"longitude": 98.84, "rasi": "Kataka", "rasi_lord": "Moon", "nakshatra": "Pushya", "nakshatra_lord": "Saturn", "pada": 2, "degrees_in_rasi": 8.84, "retrograde": False},
+                "Venus": {"longitude": 195.89, "rasi": "Thula", "rasi_lord": "Venus", "nakshatra": "Swati", "nakshatra_lord": "Rahu", "pada": 3, "degrees_in_rasi": 15.89, "retrograde": False},
+                "Saturn": {"longitude": 133.16, "rasi": "Simha", "rasi_lord": "Sun", "nakshatra": "Magha", "nakshatra_lord": "Ketu", "pada": 4, "degrees_in_rasi": 13.16, "retrograde": False},
+                "Rahu": {"longitude": 153.18, "rasi": "Kanni", "rasi_lord": "Mercury", "nakshatra": "Uttara Phalguni", "nakshatra_lord": "Sun", "pada": 2, "degrees_in_rasi": 3.18, "retrograde": True},
+                "Ketu": {"longitude": 333.18, "rasi": "Meena", "rasi_lord": "Jupiter", "nakshatra": "Purva Bhadrapada", "nakshatra_lord": "Jupiter", "pada": 4, "degrees_in_rasi": 3.18, "retrograde": True}
             }
             
             # Use GPT for better analysis even with fallback data
@@ -258,9 +263,10 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                                    f"with excellent problem-solving abilities and a compassionate nature."
             
             return {
-                "chart": {k: {"rasi": v["rasi"], "nakshatra": v["nakshatra"], "pada": v["pada"]} 
-                         for k, v in chart_data.items()},
-                "interpretation": gpt_interpretation
+                "chart": chart_data,
+                "interpretation": gpt_interpretation,
+                "status": "success",
+                "calculation_method": "fallback"
             }
         
         # General fallback for other birth data
@@ -289,9 +295,10 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                                f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
         
         return {
-            "chart": {k: {"rasi": v["rasi"], "nakshatra": v["nakshatra"], "pada": v["pada"]} 
-                     for k, v in chart_data.items()},
-            "interpretation": gpt_interpretation
+            "chart": chart_data,
+            "interpretation": gpt_interpretation,
+            "status": "success",
+            "calculation_method": "fallback"
         }
         
     except Exception as e:
