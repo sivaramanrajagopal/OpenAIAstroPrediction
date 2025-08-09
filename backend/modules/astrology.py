@@ -47,18 +47,11 @@ nakshatra_lords = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "S
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
     """Return Rasi, Nakshatra, Pada, and retrograde status."""
-    # Ensure longitude is within bounds
-    longitude = longitude % 360
-    
-    # Calculate indices with bounds checking
-    rasi_index = int(longitude // 30) % 12  # Ensure 0-11 range
-    nakshatra_index = int((longitude // (360 / 27))) % 27  # Ensure 0-26 range
-    
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
-        'rasi': rasis[rasi_index],
-        'nakshatra': nakshatras[nakshatra_index],
+        'rasi': rasis[int(longitude // 30)],
+        'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
         'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     }
 
@@ -72,7 +65,6 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
 
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
-    swe.set_topo(lon, lat, 0)
 
     # All planets 0-9
     for pid in range(0, 10):
@@ -92,10 +84,10 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
         results[f'Ketu ({base_name})'] = ketu_info
 
     # Ascendant (Lagna)
-    cusps_result, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
-    cusps = cusps_result[1:]  # Extract cusps from the result
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
-    return results, ascmc[0], cusps
+
+    return results
 
 
 # --- GPT Prompt Generator ---

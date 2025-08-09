@@ -214,8 +214,8 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 logger.info("Attempting Swiss Ephemeris calculation...")
-                data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
-                logger.info(f"Swiss Ephemeris calculation successful. Ascendant: {asc_deg}")
+                data = get_planet_positions(dob, tob, lat, lon, tz_offset)
+                logger.info("Swiss Ephemeris calculation successful.")
                 prompt = generate_gpt_prompt(data)
                 interpretation = get_astrology_interpretation(prompt)
                 # Return exact format as original code
