@@ -443,7 +443,7 @@ Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
                 
                 gpt_analysis = ask_gpt(gpt_prompt)
                 
-                # Return format matching original code
+                # Return format matching original code with proper GPT analysis
                 return {"interpretation": gpt_analysis}
             except Exception as e:
                 logger.warning(f"Life purpose calculation failed: {str(e)}")
@@ -491,47 +491,55 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
                 # Generate dasa table and then calculate bhukti periods  
                 dasa_table = generate_dasa_bhukti_table(jd, moon_longitude)
                 
-                # Create bhukti periods for the current dasa
-                current_year = datetime.datetime.now().year
-                birth_year = int(dob.split('-')[0])
-                current_age = current_year - birth_year
+                # Generate bhukti periods based on original expected format
+                # This shows the complete Vimshottari Dasa sequence with proper durations
+                from collections import OrderedDict
                 
-                # Find current running dasa
-                current_dasa = None
-                for period in dasa_table:
-                    if period["start_age"] <= current_age <= period["end_age"]:
-                        current_dasa = period
-                        break
+                # Vimshottari Dasa durations in years (matching your expected output)
+                bhukti_durations = OrderedDict([
+                    ("Moon", 10), ("Mars", 7), ("Rahu", 18), ("Jupiter", 16), 
+                    ("Saturn", 19), ("Mercury", 17), ("Ketu", 7), ("Venus", 20), ("Sun", 6)
+                ])
                 
-                if not current_dasa:
-                    current_dasa = dasa_table[0] if dasa_table else {"planet": "Sun", "duration": 6}
+                # Calculate starting point based on Moon's nakshatra 
+                nakshatra_index = int((moon_longitude % 360) // (360 / 27))
+                nakshatra_lord = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"][nakshatra_index % 9]
                 
-                # Generate bhukti periods within the current maha dasa
-                maha_dasa = current_dasa["planet"]
-                dasa_duration = current_dasa.get("duration", 6)
+                # Calculate remaining time in current dasa
+                nakshatra_length = 360 / 27
+                remainder = moon_longitude % nakshatra_length
+                portion_completed = remainder / nakshatra_length
+                current_dasa_duration = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7, "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17}[nakshatra_lord]
+                remaining_years = current_dasa_duration * (1 - portion_completed)
                 
-                # Bhukti order and proportional durations
-                bhukti_order = ["Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury", "Ketu", "Venus"]
-                bhukti_durations = {"Sun": 0.36, "Moon": 0.60, "Mars": 0.42, "Rahu": 1.08, "Jupiter": 0.96, "Saturn": 1.14, "Mercury": 1.02, "Ketu": 0.42, "Venus": 1.20}
-                
+                # Create bhukti table starting from current lord
                 bhukti_table = []
-                start_date = datetime.datetime.strptime(current_dasa.get("start_date", f"{current_year}-01-01"), "%Y-%m-%d")
+                dasa_order = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
+                current_index = dasa_order.index(nakshatra_lord)
                 
-                for bhukti_planet in bhukti_order:
-                    bhukti_duration_years = bhukti_durations[bhukti_planet] * (dasa_duration / sum(bhukti_durations.values()))
-                    end_date = start_date + datetime.timedelta(days=bhukti_duration_years * 365.25)
-                    
+                # First entry shows remaining time in current dasa
+                bhukti_table.append({
+                    "planet": nakshatra_lord,
+                    "duration": round(remaining_years, 2),
+                    "units": f"{round(remaining_years, 2)} units"
+                })
+                
+                # Add remaining dasa periods in sequence
+                for i in range(1, len(dasa_order)):
+                    planet = dasa_order[(current_index + i) % len(dasa_order)]
+                    duration = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7, "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17}[planet]
                     bhukti_table.append({
-                        "maha_dasa": maha_dasa,
-                        "bhukti": bhukti_planet,
-                        "start_date": start_date.strftime("%Y-%m-%d"),
-                        "end_date": end_date.strftime("%Y-%m-%d"),
-                        "duration": round(bhukti_duration_years, 2)
+                        "planet": planet,
+                        "duration": duration,
+                        "units": f"{duration} units"
                     })
-                    
-                    start_date = end_date
-                    if len(bhukti_table) >= 9:  # Limit to 9 bhukti periods
-                        break
+                
+                # Add final partial period to complete cycle
+                bhukti_table.append({
+                    "planet": nakshatra_lord,
+                    "duration": round(current_dasa_duration - remaining_years, 2),
+                    "units": f"{round(current_dasa_duration - remaining_years, 2)} units"
+                })
                 
                 # Generate GPT analysis
                 birth_info = {"dob": dob, "tob": tob, "place": f"lat:{lat}, lon:{lon}"}
@@ -605,7 +613,7 @@ Provide insights on spouse characteristics, marriage timing, relationship compat
                 
                 gpt_analysis = ask_gpt_spouse(gpt_prompt)
                 
-                # Return format matching original code
+                # Return format matching original code with proper GPT analysis
                 return {
                     "chart": data,
                     "report": report,
