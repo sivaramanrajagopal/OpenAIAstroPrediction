@@ -2,16 +2,15 @@
 NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.setup]
-nixPkgs = ["python311", "python311Packages.pip", "python311Packages.setuptools", "python311Packages.wheel"]
-
-[phases.install]
-cmds = [
-  "pip install --no-cache-dir python-dotenv>=1.0.0",
-  "pip install --no-cache-dir fastapi>=0.100.0",
-  "pip install --no-cache-dir uvicorn>=0.20.0", 
-  "pip install --no-cache-dir openai>=1.0.0",
-  "pip install --no-cache-dir requests>=2.25.0",
-  "pip install --no-cache-dir pydantic>=2.0.0"
+nixPkgs = [
+  "python311",
+  "python311Packages.pip", 
+  "python311Packages.python-dotenv",
+  "python311Packages.fastapi",
+  "python311Packages.uvicorn",
+  "python311Packages.openai",
+  "python311Packages.requests", 
+  "python311Packages.pydantic"
 ]
 
 [start]
