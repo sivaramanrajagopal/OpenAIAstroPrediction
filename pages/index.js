@@ -163,7 +163,10 @@ export default function Home() {
         setYogas(yogasRes.yogas || []);
         setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress...");
         setDasaBhukti(dasaBhuktiRes.table || []); // Use the table array from the response
-        setSpouseAnalysis(spouseRes.spouse_analysis || { gender: "Processing...", lagna: "Processing..." });
+        setSpouseAnalysis({
+          ...spouseRes.spouse_analysis,
+          report: spouseRes.report
+        } || { gender: "Processing...", lagna: "Processing..." });
         setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
         
       } else {
