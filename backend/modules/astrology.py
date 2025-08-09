@@ -86,7 +86,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     results['Ketu'] = ketu_info
 
     # Ascendant & Houses
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flag=FLAGS)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results, ascmc[0], cusps
 
