@@ -120,6 +120,9 @@ export default function Home() {
                    : 'http://localhost:8000');
 
   const getPrediction = async () => {
+    console.log('Button clicked! Form data:', formData);
+    console.log('Button disabled condition:', loading || !formData.dob || !formData.tob || !formData.lat || !formData.lon);
+    
     setLoading(true);
     setError('');
     setResults(null);
@@ -132,10 +135,13 @@ export default function Home() {
     setInduDasa(null);
 
     try {
+      console.log('Testing backend connection...');
       // Test backend connection first
       const healthCheck = await fetch(`${backend}/health`).then(res => res.json());
+      console.log('Health check response:', healthCheck);
       
       if (healthCheck.status === "healthy") {
+        console.log('Backend is healthy, making API calls...');
         // Get all data from backend in parallel
         const promises = [
           fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
@@ -149,6 +155,7 @@ export default function Home() {
         ];
 
         const [chartRes, careerRes, dasaRes, yogasRes, lifePurposeRes, dasaBhuktiRes, spouseRes, induDasaRes] = await Promise.all(promises);
+        console.log('All API calls completed successfully');
         
         // Set real data from backend
         setResults({
@@ -173,6 +180,7 @@ export default function Home() {
         throw new Error("Backend not available");
       }
     } catch (error) {
+      console.error('Error in getPrediction:', error);
       setError(`Error: ${error.message}`);
     } finally {
       setLoading(false);
@@ -350,7 +358,10 @@ export default function Home() {
           </div>
 
           <button
-            onClick={getPrediction}
+            onClick={() => {
+              console.log('Button clicked!');
+              getPrediction();
+            }}
             disabled={loading || !formData.dob || !formData.tob || !formData.lat || !formData.lon}
             style={{
               width: '100%',
