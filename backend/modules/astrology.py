@@ -2,29 +2,30 @@ import swisseph as swe
 import datetime
 import os
 from openai import OpenAI
+import logging
+
+# Load environment variables
 from dotenv import load_dotenv
-
-# --- Load OpenAI Key ---
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# --- Setup Swiss Ephemeris ---
-swe.set_ephe_path('./ephe')  # Use current directory for ephemeris files
-swe.set_sid_mode(swe.SIDM_LAHIRI)  # Lahiri ayanamsa (Vedic)
+# Initialize OpenAI client
+client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-# --- Nakshatras & Rasis ---
+# Set sidereal mode
+swe.set_sid_mode(swe.SIDM_LAHIRI)
+
+# 27 Nakshatras and 12 Rasis
 nakshatras = [
     "Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra",
-    "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni",
-    "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha",
-    "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana",
-    "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada",
-    "Revati"
+    "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni",
+    "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha",
+    "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha",
+    "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"
 ]
 
 rasis = [
-    "Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula",
-    "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"
+    "Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni",
+    "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"
 ]
 
 # Rasi Lords mapping
@@ -34,85 +35,54 @@ rasi_lords = {
     "Dhanus": "Jupiter", "Makara": "Saturn", "Kumbha": "Saturn", "Meena": "Jupiter"
 }
 
-# Nakshatra Lords mapping (9-fold division)
-nakshatra_lords = [
-    "Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"
-]
+# Nakshatra Lords (9 lords in sequence)
+nakshatra_lords = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
 
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
-    longitude = longitude % 360
-    rasi_index = int(longitude // 30)
-    nakshatra_index = int(longitude // (360 / 27))
-    pada = int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
-    
-    rasi = rasis[rasi_index]
-    nakshatra = nakshatras[nakshatra_index]
-    rasi_lord = rasi_lords[rasi]
-    nakshatra_lord = nakshatra_lords[nakshatra_index % 9]
-    degrees_in_rasi = longitude % 30
-    
+    """Return Rasi, Nakshatra, Pada, and retrograde status."""
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
-        'rasi': rasi,
-        'rasi_lord': rasi_lord,
-        'nakshatra': nakshatra,
-        'nakshatra_lord': nakshatra_lord,
-        'pada': pada,
-        'degrees_in_rasi': degrees_in_rasi
+        'rasi': rasis[int(longitude // 30)],
+        'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
+        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     }
 
 
 # --- Planet Positions ---
 
 def get_planet_positions(dob, tob, lat, lon, tz_offset):
-    """
-    Returns planetary positions along with Ascendant and house cusps.
-    Output: data (dict), ascendant_degree (float), cusps (list)
-    """
-    print(f"DEBUG: get_planet_positions called with lat={lat}, lon={lon}, tz_offset={tz_offset}")
     local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
     utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-    print(f"DEBUG: UTC time: {utc_dt}")
+
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day,
                     utc_dt.hour + utc_dt.minute / 60.0)
-    print(f"DEBUG: Julian Day: {jd}")
-
-    swe.set_topo(lon, lat, 0)
-    print(f"DEBUG: Set topocentric coordinates: lon={lon}, lat={lat}")
 
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
 
-    # Calculate planets
-    for pid in range(0, 10):  # Sun to Pluto
+    # All planets 0-9
+    for pid in range(0, 10):
         name = swe.get_planet_name(pid)
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-        # Special debug for Moon
-        if name == "Moon":
-            print(f"DEBUG: Moon longitude: {lonlat[0]}")
-            print(f"DEBUG: Moon speed: {lonlat[3]}")
+    # Rahu/Ketu - True & Mean Node
+    for node_type, base_name in [(swe.TRUE_NODE, 'True'), (swe.MEAN_NODE, 'Mean')]:
+        rahu = swe.calc_ut(jd, node_type, FLAGS)[0]
+        rahu_info = get_chart_info(rahu[0], rahu[3])
+        results[f'Rahu ({base_name})'] = rahu_info
 
-            # Test without topocentric for comparison
-            lonlat_geo = swe.calc_ut(jd, pid, swe.FLG_SIDEREAL)[0]  # No topocentric
-            print(f"DEBUG: Moon longitude (geocentric): {lonlat_geo[0]}")
-            print(f"DEBUG: Difference: {lonlat[0] - lonlat_geo[0]}")
+        ketu_lon = (rahu[0] + 180.0) % 360.0
+        ketu_info = get_chart_info(ketu_lon, rahu[3])  # same speed (direction doesn't matter for chart info)
+        ketu_info['retrograde'] = True  # Force retrograde = True
+        results[f'Ketu ({base_name})'] = ketu_info
 
-    # Rahu & Ketu - True Node
-    rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
-    results['Rahu'] = get_chart_info(rahu[0], rahu[3])
-    ketu_lon = (rahu[0] + 180.0) % 360.0
-    ketu_info = get_chart_info(ketu_lon, rahu[3])
-    ketu_info['retrograde'] = True  # Ketu is always retrograde
-    results['Ketu'] = ketu_info
-
-    # Ascendant & Houses
+    # Ascendant (Lagna)
     cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
-    return results, ascmc[0], cusps
+    return results
 
 
 # --- GPT Prompt Generator ---
@@ -125,9 +95,9 @@ def generate_gpt_prompt(data):
         retrograde = "Retrograde" if info['retrograde'] else "Direct"
         lines.append(
             f"{body}: {info['longitude']:.2f}° ({retrograde}) | "
-            f"{info['rasi']} (Lord: {info['rasi_lord']}) | "
-            f"{info['nakshatra']} (Lord: {info['nakshatra_lord']}) | "
-            f"Pada {info['pada']} | {info['degrees_in_rasi']:.2f}° in {info['rasi']}"
+            f"{info['rasi']} (Lord: {rasi_lords[info['rasi']]}) | "
+            f"{info['nakshatra']} (Lord: {nakshatra_lords[nakshatras.index(info['nakshatra'])]}) | "
+            f"Pada {info['pada']} | {info['longitude'] % 30:.2f}° in {info['rasi']}"
         )
     return "\n".join(lines)
 

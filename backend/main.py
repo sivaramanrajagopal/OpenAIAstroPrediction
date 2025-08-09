@@ -213,7 +213,7 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         # Try original Swiss Ephemeris calculations first - matching original code structure
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
-                data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
+                data = get_planet_positions(dob, tob, lat, lon, tz_offset)
                 prompt = generate_gpt_prompt(data)
                 interpretation = get_astrology_interpretation(prompt)
                 # Return exact format as original code
