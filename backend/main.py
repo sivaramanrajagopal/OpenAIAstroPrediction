@@ -6,21 +6,31 @@ import os
 from dotenv import load_dotenv
 import sys
 
-# Add backend directory to Python path
-backend_path = os.path.join(os.path.dirname(__file__), 'backend')
-if os.path.exists(backend_path):
-    sys.path.insert(0, backend_path)
-    print(f"✅ Added backend path: {backend_path}")
+# Set up ephemeris path for Swiss Ephemeris
+ephe_path = os.path.join(os.path.dirname(__file__), 'ephe')
+if os.path.exists(ephe_path):
+    print(f"✅ Found ephemeris files at: {ephe_path}")
+else:
+    print(f"⚠️  Ephemeris path not found: {ephe_path}")
+
+# Add current directory to Python path for module imports
+current_dir = os.path.dirname(__file__)
+if current_dir not in sys.path:
+    sys.path.insert(0, current_dir)
+    print(f"✅ Added current directory to path: {current_dir}")
 
 # Try to import swisseph, fallback if not available
 try:
     import swisseph as swe
+    # Set up ephemeris path and mode for Vedic calculations
+    swe.set_ephe_path('./ephe')
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
     SWISSEPH_AVAILABLE = True
-    print("✅ Swiss Ephemeris available")
-except ImportError:
+    print("✅ Swiss Ephemeris available and configured for Vedic calculations")
+except ImportError as e:
     SWISSEPH_AVAILABLE = False
     swe = None
-    print("⚠️  Swiss Ephemeris not available - using fallback calculations")
+    print(f"⚠️  Swiss Ephemeris not available: {e} - using fallback calculations")
 
 # Load environment variables
 load_dotenv()
