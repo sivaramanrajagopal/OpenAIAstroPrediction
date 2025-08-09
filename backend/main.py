@@ -1,10 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import datetime
-import swisseph as swe
 import logging
 import os
 from dotenv import load_dotenv
+
+# Try to import swisseph, fallback if not available
+try:
+    import swisseph as swe
+    SWISSEPH_AVAILABLE = True
+except ImportError:
+    SWISSEPH_AVAILABLE = False
+    swe = None
 
 # Load environment variables
 load_dotenv()

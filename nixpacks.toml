@@ -2,11 +2,10 @@
 NIXPACKS_PYTHON_VERSION = "3.11"
 
 [phases.setup]
-nixPkgs = ["python311", "python311Packages.pip", "gcc", "pkg-config", "glibc"]
+nixPkgs = ["python311", "python311Packages.pip"]
 
 [phases.install]
 cmds = [
-  "python -m pip install --force-reinstall --no-cache-dir pyswisseph",
   "python -m pip install --no-cache-dir python-dotenv>=1.0.0",
   "python -m pip install --no-cache-dir fastapi>=0.100.0",
   "python -m pip install --no-cache-dir uvicorn>=0.20.0", 
