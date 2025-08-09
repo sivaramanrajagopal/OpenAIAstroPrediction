@@ -81,13 +81,13 @@ swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- HELPER FUNCTIONS ---
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
     return {
         'longitude': longitude,
-        'retrograde': speed < 0 if speed is not None else None,
+        'retrograde': speed < 0 if speed is not None else False,
         'rasi': rasis[int(longitude // 30)],
         'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
-        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
+        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1),
+        'degree': longitude % 30
     }
 
 def get_planet_positions(jd, lat, lon):
@@ -157,37 +157,14 @@ def generate_purpose_report(analysis, data):
     report += f"\nSun Sign: {analysis['sun_sign']}"
     report += f"\nAtmakaraka: {analysis['atmakaraka']}"
     report += f"\nAmatyakaraka: {analysis['amatyakaraka']}"
-    
-    # Add detailed interpretation using GPT
-    prompt = f"""
-    Based on this Vedic astrology chart:
-    - Ascendant: {analysis['ascendant']}
-    - Moon Sign: {analysis['moon_sign']} (Nakshatra: {analysis['moon_nakshatra']})
-    - Sun Sign: {analysis['sun_sign']}
-    - Atmakaraka (Soul Planet): {analysis['atmakaraka']}
-    - Amatyakaraka (Mind Planet): {analysis['amatyakaraka']}
-    
-    Please provide a comprehensive life purpose analysis including:
-    1. Overall life mission and soul purpose
-    2. Key strengths and talents to develop
-    3. Career paths that align with your dharma
-    4. Spiritual growth opportunities
-    5. Challenges to overcome for fulfillment
-    
-    Write in a clear, inspiring, and practical manner suitable for a Vedic astrology reading.
-    """
-    
-    gpt_interpretation = ask_gpt(prompt)
-    report += f"\n\n{gpt_interpretation}"
-    
     return report
 
 def ask_gpt(prompt):
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[
-                {"role": "system", "content": "You're a wise Vedic astrologer with deep knowledge of Jyotish. Provide insightful, practical, and inspiring interpretations that help people understand their life purpose and dharma."},
+                {"role": "system", "content": "You're a wise Vedic astrologer."},
                 {"role": "user", "content": prompt}
             ],
             temperature=0.7,

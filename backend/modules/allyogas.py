@@ -28,7 +28,6 @@ nakshatras = [
 ]
 
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
@@ -58,7 +57,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
         ketu_info['retrograde'] = True
         results[f'Ketu ({base_name})'] = ketu_info
 
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', FLAGS)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results
 

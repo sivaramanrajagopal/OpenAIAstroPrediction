@@ -43,7 +43,6 @@ swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- FUNCTIONS ---
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
@@ -62,7 +61,7 @@ def get_planet_positions(jd, lat, lon):
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', FLAGS)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results, ascmc[0]
 
@@ -98,7 +97,7 @@ def analyze_marriage(data, asc_deg, aspects, gender):
     }
 
 def generate_report(analysis):
-    basic_report = (
+    return (
         f"💍 Spouse Analysis:\n"
         f"Gender: {analysis['gender']}\n"
         f"Ascendant: {analysis['lagna']}\n"
@@ -106,33 +105,11 @@ def generate_report(analysis):
         f"7th Lord: {analysis['7th_lord']}\n"
         f"Spouse Direction: {analysis['spouse_direction']}\n"
     )
-    
-    # Add detailed interpretation using GPT
-    prompt = f"""
-    Based on this Vedic astrology marriage analysis:
-    - Gender: {analysis['gender']}
-    - Ascendant (Lagna): {analysis['lagna']}
-    - 7th House Sign: {analysis['7th_house_sign']}
-    - 7th Lord: {analysis['7th_lord']}
-    - Spouse Direction: {analysis['spouse_direction']}
-    
-    Please provide a comprehensive spouse and marriage analysis including:
-    1. Characteristics of the future spouse
-    2. Timing of marriage
-    3. Marriage compatibility factors
-    4. Relationship dynamics and challenges
-    5. Advice for a harmonious marriage
-    
-    Write in a clear, practical, and insightful manner suitable for a Vedic astrology reading.
-    """
-    
-    gpt_interpretation = ask_gpt_spouse(prompt)
-    return basic_report + f"\n\n{gpt_interpretation}"
 
 def ask_gpt_spouse(prompt):
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are an expert Vedic astrologer specializing in marriage and spouse prediction."},
                 {"role": "user", "content": prompt}

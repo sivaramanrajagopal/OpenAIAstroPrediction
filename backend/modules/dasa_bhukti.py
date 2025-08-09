@@ -42,13 +42,13 @@ swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- HELPER FUNCTIONS ---
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
+    """Return planet's chart info."""
     return {
         'longitude': longitude,
-        'retrograde': speed < 0 if speed is not None else None,
+        'retrograde': speed < 0 if speed is not None else False,
         'rasi': rasis[int(longitude // 30)],
         'nakshatra': nakshatras[int((longitude % 360) // (360 / 27))],
-        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
+        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1),
     }
 
 def get_planet_positions(jd, lat, lon):
@@ -78,7 +78,7 @@ def get_planet_positions(jd, lat, lon):
     mean_ketu_info['retrograde'] = True
     results['Ketu (Mean)'] = mean_ketu_info
 
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', FLAGS)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results, ascmc[0], cusps
 
@@ -160,7 +160,7 @@ def ask_gpt_dasa_prediction(birth_info, dasa_table, planet_data):
     """
     try:
         response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
             max_tokens=1500

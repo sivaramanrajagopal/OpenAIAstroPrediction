@@ -71,7 +71,6 @@ swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # --- FUNCTIONS ---
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
@@ -98,7 +97,7 @@ def get_planet_positions(jd, lat, lon):
     ketu_info['retrograde'] = True
     results['Ketu'] = ketu_info
 
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', FLAGS)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results, ascmc[0], cusps
 
@@ -169,43 +168,4 @@ def generate_career_report(analysis, asc_deg):
     for planet in analysis['career_planets']:
         report += f"\n{planet['planet']} in {planet['sign']} (House {planet['house']}):"
         report += f"\n  Potential Careers: {', '.join(career_significators.get(planet['planet'], []))}"
-    
-    # Add detailed interpretation using GPT
-    prompt = f"""
-    Based on this Vedic astrology career analysis:
-    - Ascendant: {analysis['ascendant']}
-    - Career Houses: {', '.join([f"{h}{'th' if h not in [1,2,3] else {1:'st',2:'nd',3:'rd'}[h]} House ({info['sign']})" for h, info in analysis['house_lords'].items()])}
-    - Career Planets: {', '.join([f"{p['planet']} in {p['sign']} (House {p['house']})" for p in analysis['career_planets']])}
-    - Yogas: {', '.join(analysis['yogas']) if analysis['yogas'] else 'None detected'}
-    
-    Please provide a comprehensive career analysis including:
-    1. Best career paths and professions
-    2. Timing for career success and growth
-    3. Strengths and skills to develop
-    4. Potential challenges and how to overcome them
-    5. Business and entrepreneurship opportunities
-    6. Work environment preferences
-    
-    Write in a clear, practical, and inspiring manner suitable for a Vedic astrology reading.
-    """
-    
-    gpt_interpretation = ask_gpt_career(prompt)
-    report += f"\n\n{gpt_interpretation}"
-    
     return report
-
-
-def ask_gpt_career(prompt):
-    try:
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[
-                {"role": "system", "content": "You are an expert Vedic astrologer specializing in career and professional guidance. Provide insightful, practical, and inspiring career advice based on Jyotish principles."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.7,
-            max_tokens=2000
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"GPT Error: {str(e)}"

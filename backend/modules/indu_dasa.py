@@ -50,7 +50,6 @@ rasi_values = {
 }
 
 def get_chart_info(longitude, speed=None):
-    #longitude = longitude % 360
     return {
         'longitude': longitude,
         'retrograde': speed < 0 if speed is not None else None,
@@ -67,7 +66,7 @@ def get_planet_positions(jd, lat, lon):
         name = swe.get_planet_name(pid)
         lonlat = swe.calc_ut(jd, pid, flags)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags)
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=flags)
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results
 
