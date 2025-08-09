@@ -12,7 +12,12 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 # Set ephemeris path and sidereal mode
-swe.set_ephe_path('.')  # Use current directory like working reference code
+import os
+current_dir = os.path.dirname(os.path.abspath(__file__))
+ephe_path = os.path.join(current_dir, '..', 'ephe')
+print(f"Current directory: {current_dir}")
+print(f"Ephemeris path: {ephe_path}")
+swe.set_ephe_path(ephe_path)  # Use absolute path to ephe directory
 swe.set_sid_mode(swe.SIDM_LAHIRI)
 
 # 27 Nakshatras and 12 Rasis
@@ -67,7 +72,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
 
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
-    swe.set_topo(lon, lat, 0)  # Set topocentric coordinates
+    swe.set_topo(lon, lat, 0)
 
     # All planets 0-9
     for pid in range(0, 10):
@@ -101,10 +106,18 @@ def generate_gpt_prompt(data):
     )
     for body, info in data.items():
         retrograde = "Retrograde" if info['retrograde'] else "Direct"
+        
+        # Safe nakshatra lord calculation
+        try:
+            nakshatra_index = nakshatras.index(info['nakshatra'])
+            nakshatra_lord = nakshatra_lords[nakshatra_index % 9]
+        except (ValueError, IndexError):
+            nakshatra_lord = "Unknown"
+        
         lines.append(
             f"{body}: {info['longitude']:.2f}° ({retrograde}) | "
-            f"{info['rasi']} (Lord: {rasi_lords[info['rasi']]}) | "
-            f"{info['nakshatra']} (Lord: {nakshatra_lords[nakshatras.index(info['nakshatra'])]}) | "
+            f"{info['rasi']} (Lord: {rasi_lords.get(info['rasi'], 'Unknown')}) | "
+            f"{info['nakshatra']} (Lord: {nakshatra_lord}) | "
             f"Pada {info['pada']} | {info['longitude'] % 30:.2f}° in {info['rasi']}"
         )
     return "\n".join(lines)
