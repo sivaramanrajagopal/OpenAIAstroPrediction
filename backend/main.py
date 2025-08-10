@@ -247,7 +247,7 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":
-            logger.info("Using hardcoded accurate data for test case")
+            logger.info("Using hardcoded accurate data for test case - FORCE REDEPLOY")
             chart_data = {
                 "Sun": {"longitude": 151.66, "rasi": "Kanni", "rasi_lord": "Mercury", "nakshatra": "Uttara Phalguni", "nakshatra_lord": "Sun", "pada": 2, "degrees_in_rasi": 1.66, "retrograde": False},
                 "Moon": {"longitude": 354.14, "rasi": "Meena", "rasi_lord": "Jupiter", "nakshatra": "Revati", "nakshatra_lord": "Mercury", "pada": 3, "degrees_in_rasi": 24.14, "retrograde": False},
