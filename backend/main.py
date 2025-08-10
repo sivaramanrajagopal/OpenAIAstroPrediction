@@ -199,7 +199,7 @@ def root():
     return {
         "message": "🔮 Vedic Astrology API",
         "status": "online", 
-        "version": "2.3-MOON-PADA-FIX",
+        "version": "2.4-DEBUG-MOON-CALCULATION",
         "deployment_time": "2025-01-10T03:15:00Z",
         "frontend": "https://aiastroprediction.vercel.app",
         "capabilities": {
@@ -223,14 +223,27 @@ def root():
 @app.get("/predict")
 def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
-        logger.info(f"🚀 FIXED PREDICT CODE RUNNING - V2.3 - MOON PADA 3 FIX - dob={dob}, tob={tob}, lat={lat}, lon={lon}")
+        logger.info(f"🚀 DEBUGGING PREDICT CODE V2.4 - MOON PADA INVESTIGATION - dob={dob}, tob={tob}, lat={lat}, lon={lon}")
+        logger.info(f"🔍 MODULES_AVAILABLE: {MODULES_AVAILABLE}")
+        logger.info(f"🔍 SWISSEPH_AVAILABLE: {SWISSEPH_AVAILABLE}")
         
         # Try original Swiss Ephemeris calculations first - matching original code structure
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
-                logger.info("Attempting Swiss Ephemeris calculation...")
+                logger.info("🔍 Attempting Swiss Ephemeris calculation...")
                 data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
-                logger.info("Swiss Ephemeris calculation successful.")
+                logger.info("🔍 Swiss Ephemeris calculation successful.")
+                
+                # DEBUG: Log Moon data specifically
+                if 'Moon' in data:
+                    moon = data['Moon']
+                    logger.info(f"🌙 MOON DEBUG - Longitude: {moon.get('longitude', 'missing'):.8f}°")
+                    logger.info(f"🌙 MOON DEBUG - Pada: {moon.get('pada', 'missing')}")
+                    logger.info(f"🌙 MOON DEBUG - Rasi: {moon.get('rasi', 'missing')}")
+                    logger.info(f"🌙 MOON DEBUG - Nakshatra: {moon.get('nakshatra', 'missing')}")
+                else:
+                    logger.error("🚨 NO MOON DATA FOUND IN RESULT!")
+                
                 prompt = generate_gpt_prompt(data)
                 interpretation = get_astrology_interpretation(prompt)
                 # Return exact format as original code
@@ -241,10 +254,11 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                     "calculation_method": "swiss_ephemeris"
                 }
             except Exception as e:
-                logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
-                logger.error(f"Error type: {type(e).__name__}")
+                logger.error(f"🚨 SWISS EPHEMERIS CALCULATION FAILED: {str(e)}")
+                logger.error(f"🚨 Error type: {type(e).__name__}")
                 import traceback
-                logger.error(f"Traceback: {traceback.format_exc()}")
+                logger.error(f"🚨 Full traceback: {traceback.format_exc()}")
+                logger.error(f"🚨 FALLING BACK TO HARDCODED DATA!")
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":
