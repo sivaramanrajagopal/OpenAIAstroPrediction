@@ -112,7 +112,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
 
-    return results
+    return results, ascmc[0], cusps
 
 
 # --- GPT Prompt Generator ---
