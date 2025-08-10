@@ -228,101 +228,22 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 logger.info("Attempting Swiss Ephemeris calculation...")
-                
-                # Direct Swiss Ephemeris calculation bypassing module imports
-                import swisseph as swe
-                import datetime
-                
-                # Set ephemeris path for Render environment
-                ephe_path = os.path.join(os.path.dirname(__file__), 'ephe')
-                if os.path.exists(ephe_path):
-                    swe.set_ephe_path(ephe_path)
-                swe.set_sid_mode(swe.SIDM_LAHIRI)
-                
-                # Calculate directly without module dependencies
-                local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
-                utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-                jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
-                
-                FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
-                data = {}
-                
-                # Planet calculations
-                for pid in range(0, 10):
-                    name = swe.get_planet_name(pid)
-                    lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
-                    longitude = lonlat[0]
-                    speed = lonlat[3]
-                    
-                    data[name] = {
-                        'longitude': longitude,
-                        'retrograde': speed < 0,
-                        'rasi': ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(longitude // 30)],
-                        'rasi_lord': {"Mesha": "Mars", "Rishaba": "Venus", "Mithuna": "Mercury", "Kataka": "Moon", "Simha": "Sun", "Kanni": "Mercury", "Thula": "Venus", "Vrischika": "Mars", "Dhanus": "Jupiter", "Makara": "Saturn", "Kumbha": "Saturn", "Meena": "Jupiter"}[["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(longitude // 30)]],
-                        'nakshatra': ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"][int((longitude % 360) // (360 / 27))],
-                        'nakshatra_lord': ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"][int((longitude % 360) // (360 / 27)) % 9],
-                        'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1),
-                        'degrees_in_rasi': longitude % 30
-                    }
-                
-                # Rahu/Ketu
-                rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
-                rahu_longitude = rahu[0]
-                data['Rahu'] = {
-                    'longitude': rahu_longitude,
-                    'retrograde': True,
-                    'rasi': ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(rahu_longitude // 30)],
-                    'rasi_lord': {"Mesha": "Mars", "Rishaba": "Venus", "Mithuna": "Mercury", "Kataka": "Moon", "Simha": "Sun", "Kanni": "Mercury", "Thula": "Venus", "Vrischika": "Mars", "Dhanus": "Jupiter", "Makara": "Saturn", "Kumbha": "Saturn", "Meena": "Jupiter"}[["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(rahu_longitude // 30)]],
-                    'nakshatra': ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"][int((rahu_longitude % 360) // (360 / 27))],
-                    'nakshatra_lord': ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"][int((rahu_longitude % 360) // (360 / 27)) % 9],
-                    'pada': int(((rahu_longitude % (360 / 27)) / (360 / 27 / 4)) + 1),
-                    'degrees_in_rasi': rahu_longitude % 30
-                }
-                
-                ketu_longitude = (rahu_longitude + 180.0) % 360.0
-                data['Ketu'] = {
-                    'longitude': ketu_longitude,
-                    'retrograde': True,
-                    'rasi': ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(ketu_longitude // 30)],
-                    'rasi_lord': {"Mesha": "Mars", "Rishaba": "Venus", "Mithuna": "Mercury", "Kataka": "Moon", "Simha": "Sun", "Kanni": "Mercury", "Thula": "Venus", "Vrischika": "Mars", "Dhanus": "Jupiter", "Makara": "Saturn", "Kumbha": "Saturn", "Meena": "Jupiter"}[["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(ketu_longitude // 30)]],
-                    'nakshatra': ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"][int((ketu_longitude % 360) // (360 / 27))],
-                    'nakshatra_lord': ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"][int((ketu_longitude % 360) // (360 / 27)) % 9],
-                    'pada': int(((ketu_longitude % (360 / 27)) / (360 / 27 / 4)) + 1),
-                    'degrees_in_rasi': ketu_longitude % 30
-                }
-                
-                # Ascendant
-                cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
-                asc_longitude = ascmc[0]
-                data['Ascendant'] = {
-                    'longitude': asc_longitude,
-                    'retrograde': None,
-                    'rasi': ["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(asc_longitude // 30)],
-                    'rasi_lord': {"Mesha": "Mars", "Rishaba": "Venus", "Mithuna": "Mercury", "Kataka": "Moon", "Simha": "Sun", "Kanni": "Mercury", "Thula": "Venus", "Vrischika": "Mars", "Dhanus": "Jupiter", "Makara": "Saturn", "Kumbha": "Saturn", "Meena": "Jupiter"}[["Mesha", "Rishaba", "Mithuna", "Kataka", "Simha", "Kanni", "Thula", "Vrischika", "Dhanus", "Makara", "Kumbha", "Meena"][int(asc_longitude // 30)]],
-                    'nakshatra': ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"][int((asc_longitude % 360) // (360 / 27))],
-                    'nakshatra_lord': ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"][int((asc_longitude % 360) // (360 / 27)) % 9],
-                    'pada': int(((asc_longitude % (360 / 27)) / (360 / 27 / 4)) + 1),
-                    'degrees_in_rasi': asc_longitude % 30
-                }
-                
+                data = get_planet_positions(dob, tob, lat, lon, tz_offset)
                 logger.info("Swiss Ephemeris calculation successful.")
-                logger.info(f"Planet data type: {type(data)}, count: {len(data)}")
-                
-                # Simple interpretation without module dependencies
-                interpretation = f"Vedic astrology analysis for {dob} at {tob}. Your planetary positions have been calculated using Swiss Ephemeris with Lahiri ayanamsa."
-                
+                prompt = generate_gpt_prompt(data)
+                interpretation = get_astrology_interpretation(prompt)
                 # Return exact format as original code
                 return {
                     "chart": data,
                     "interpretation": interpretation,
                     "status": "success",
-                    "calculation_method": "swiss_ephemeris_direct"
+                    "calculation_method": "swiss_ephemeris"
                 }
             except Exception as e:
-                logger.error(f"Swiss Ephemeris calculation failed: {str(e)}")
+                logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
                 logger.error(f"Error type: {type(e).__name__}")
                 import traceback
-                logger.error(f"Full traceback: {traceback.format_exc()}")
+                logger.error(f"Traceback: {traceback.format_exc()}")
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":
