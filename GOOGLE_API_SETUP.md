@@ -137,6 +137,19 @@ With Google APIs enabled, your app will have:
 2. **CORS errors**: Ensure HTTP referrer restrictions include your domain
 3. **Quota exceeded**: Monitor usage in Google Cloud Console
 4. **Invalid results**: Verify API key has proper permissions
+5. **Environment variables cached**: If Vercel shows old URLs, try:
+   - Delete and re-add environment variables
+   - Redeploy without cache: Deployments → Redeploy (uncheck "Use existing Build Cache")
+   - Force new deployment: `git commit --allow-empty -m "Force redeploy" && git push`
+
+**Vercel Environment Variable Caching:**
+
+If your environment variables aren't updating in Vercel:
+1. Go to Settings → Environment Variables
+2. **Delete** the old variable completely
+3. **Add** the variable again with correct value
+4. **Redeploy** without using cache
+5. Check browser console logs to confirm new values are used
 
 ## Fallback Behavior
 

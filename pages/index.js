@@ -346,15 +346,14 @@ export default function Home() {
   const [spouseAnalysis, setSpouseAnalysis] = useState(null);
   const [induDasa, setInduDasa] = useState(null);
 
-  // Backend URL - temporarily hard-coded to Railway for debugging
-  const backend = 'https://proactive-manifestation-production.up.railway.app';
+  // Backend URL - environment variable with Railway fallback
+  const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
+                 (process.env.NODE_ENV === 'production' 
+                   ? 'https://proactive-manifestation-production.up.railway.app'
+                   : 'http://localhost:8000');
 
   const getPrediction = async () => {
-    console.log('🚀 Button clicked! Form data:', formData);
-    console.log('🔧 Button disabled condition:', loading || !formData.dob || !formData.tob || !formData.lat || !formData.lon);
-    console.log('🌐 Backend URL being used:', backend);
-    console.log('📍 Environment:', process.env.NODE_ENV);
-    console.log('🔑 Backend env var:', process.env.NEXT_PUBLIC_BACKEND_URL);
+    console.log('🚀 Generating astrological reading...');
     
     setLoading(true);
     setError('');
@@ -368,19 +367,17 @@ export default function Home() {
     setInduDasa(null);
 
     try {
-      console.log('🏥 Testing backend connection to:', `${backend}/health`);
+      // Test backend connection
       const healthResponse = await fetch(`${backend}/health`);
-      console.log('📡 Health check HTTP status:', healthResponse.status);
       
       if (!healthResponse.ok) {
-        throw new Error(`Health check failed with status: ${healthResponse.status}`);
+        throw new Error(`Backend connection failed (${healthResponse.status})`);
       }
       
       const healthCheck = await healthResponse.json();
-      console.log('✅ Health check response:', healthCheck);
       
       if (healthCheck.status === "healthy") {
-        console.log('Backend is healthy, making API calls...');
+        console.log('✅ Calculating planetary positions and generating insights...');
         // Get all data from backend in parallel
         const promises = [
           fetch(`${backend}/predict?${new URLSearchParams({ ...formData })}`).then(res => res.json()),
@@ -394,7 +391,7 @@ export default function Home() {
         ];
 
         const [chartRes, careerRes, dasaRes, yogasRes, lifePurposeRes, dasaBhuktiRes, spouseRes, induDasaRes] = await Promise.all(promises);
-        console.log('All API calls completed successfully');
+        console.log('🎯 Astrological analysis complete!');
         
         // Set real data from backend
         setResults({
@@ -416,17 +413,11 @@ export default function Home() {
         setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
         
       } else {
-        console.error('❌ Backend health check failed:', healthCheck);
-        throw new Error(`Backend not healthy: ${healthCheck.status || 'unknown'}`);
+        throw new Error(`Backend health check failed: ${healthCheck.status || 'unknown'}`);
       }
     } catch (error) {
-      console.error('💥 Error in getPrediction:', error);
-      console.error('📊 Full error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-      setError(`Backend Connection Error: ${error.message}`);
+      console.error('❌ Astrological reading failed:', error.message);
+      setError(`Unable to generate reading: ${error.message}`);
     } finally {
       setLoading(false);
     }
