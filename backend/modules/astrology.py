@@ -122,21 +122,32 @@ def generate_gpt_prompt(data):
         "Please provide interpretation in 4 sections:\n1. Personality\n2. Career\n3. Relationships\n4. Remedies\n"
     )
     for body, info in data.items():
-        retrograde = "Retrograde" if info['retrograde'] else "Direct"
-        
-        # Safe nakshatra lord calculation
         try:
-            nakshatra_index = nakshatras.index(info['nakshatra'])
-            nakshatra_lord = nakshatra_lords[nakshatra_index % 9]
-        except (ValueError, IndexError):
-            nakshatra_lord = "Unknown"
-        
-        lines.append(
-            f"{body}: {info['longitude']:.2f}° ({retrograde}) | "
-            f"{info['rasi']} (Lord: {rasi_lords.get(info['rasi'], 'Unknown')}) | "
-            f"{info['nakshatra']} (Lord: {nakshatra_lord}) | "
-            f"Pada {info['pada']} | {info['longitude'] % 30:.2f}° in {info['rasi']}"
-        )
+            # Safe access to all dictionary keys
+            longitude = info.get('longitude', 0)
+            retrograde_status = info.get('retrograde', False)
+            rasi = info.get('rasi', 'Unknown')
+            nakshatra = info.get('nakshatra', 'Unknown')
+            pada = info.get('pada', 1)
+            
+            retrograde = "Retrograde" if retrograde_status else "Direct"
+            
+            # Safe nakshatra lord calculation
+            try:
+                nakshatra_index = nakshatras.index(nakshatra)
+                nakshatra_lord = nakshatra_lords[nakshatra_index % 9]
+            except (ValueError, IndexError):
+                nakshatra_lord = "Unknown"
+            
+            lines.append(
+                f"{body}: {longitude:.2f}° ({retrograde}) | "
+                f"{rasi} (Lord: {rasi_lords.get(rasi, 'Unknown')}) | "
+                f"{nakshatra} (Lord: {nakshatra_lord}) | "
+                f"Pada {pada} | {longitude % 30:.2f}° in {rasi}"
+            )
+        except Exception as e:
+            # If any planet data is malformed, skip it with a safe fallback
+            lines.append(f"{body}: [Data processing error: {str(e)}]")
     return "\n".join(lines)
 
 
