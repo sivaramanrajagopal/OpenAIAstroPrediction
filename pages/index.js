@@ -353,8 +353,11 @@ export default function Home() {
                    : 'http://localhost:8000');
 
   const getPrediction = async () => {
-    console.log('Button clicked! Form data:', formData);
-    console.log('Button disabled condition:', loading || !formData.dob || !formData.tob || !formData.lat || !formData.lon);
+    console.log('🚀 Button clicked! Form data:', formData);
+    console.log('🔧 Button disabled condition:', loading || !formData.dob || !formData.tob || !formData.lat || !formData.lon);
+    console.log('🌐 Backend URL being used:', backend);
+    console.log('📍 Environment:', process.env.NODE_ENV);
+    console.log('🔑 Backend env var:', process.env.NEXT_PUBLIC_BACKEND_URL);
     
     setLoading(true);
     setError('');
@@ -368,10 +371,16 @@ export default function Home() {
     setInduDasa(null);
 
     try {
-      console.log('Testing backend connection...');
-      // Test backend connection first
-      const healthCheck = await fetch(`${backend}/health`).then(res => res.json());
-      console.log('Health check response:', healthCheck);
+      console.log('🏥 Testing backend connection to:', `${backend}/health`);
+      const healthResponse = await fetch(`${backend}/health`);
+      console.log('📡 Health check HTTP status:', healthResponse.status);
+      
+      if (!healthResponse.ok) {
+        throw new Error(`Health check failed with status: ${healthResponse.status}`);
+      }
+      
+      const healthCheck = await healthResponse.json();
+      console.log('✅ Health check response:', healthCheck);
       
       if (healthCheck.status === "healthy") {
         console.log('Backend is healthy, making API calls...');
@@ -410,11 +419,17 @@ export default function Home() {
         setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
         
       } else {
-        throw new Error("Backend not available");
+        console.error('❌ Backend health check failed:', healthCheck);
+        throw new Error(`Backend not healthy: ${healthCheck.status || 'unknown'}`);
       }
     } catch (error) {
-      console.error('Error in getPrediction:', error);
-      setError(`Error: ${error.message}`);
+      console.error('💥 Error in getPrediction:', error);
+      console.error('📊 Full error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      setError(`Backend Connection Error: ${error.message}`);
     } finally {
       setLoading(false);
     }
