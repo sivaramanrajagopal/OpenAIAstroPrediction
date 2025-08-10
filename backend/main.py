@@ -199,7 +199,8 @@ def root():
     return {
         "message": "🔮 Vedic Astrology API",
         "status": "online", 
-        "version": "2.0",
+        "version": "2.3",
+        "deployment_time": "2025-01-10T03:15:00Z",
         "frontend": "https://aiastroprediction.vercel.app",
         "capabilities": {
             "swiss_ephemeris": "✅ Available" if SWISSEPH_AVAILABLE else "❌ Not Available",
@@ -727,8 +728,8 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 Starting Vedic Astrology API V2.2 - FORCE REDEPLOY - on port {port}")
+    print(f"🚀 Starting Vedic Astrology API V2.3 - CLEAR CACHE DEPLOY - on port {port}")
     print(f"📊 Swiss Ephemeris: {'✅ Available' if SWISSEPH_AVAILABLE else '❌ Not Available'}")
     print(f"🔮 Astrology Modules: {'✅ Available' if MODULES_AVAILABLE else '❌ Not Available'}")
-    print(f"🔧 Direct Swiss Ephemeris mode enabled for predict endpoint")
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
+    print(f"🕐 Deployment Time: 2025-01-10T03:15:00Z")
+    uvicorn.run(app, host="0.0.0.0", port=port)
