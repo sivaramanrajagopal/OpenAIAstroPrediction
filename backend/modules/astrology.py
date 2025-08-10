@@ -55,14 +55,11 @@ nakshatra_lords = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "S
 # --- Chart Info ---
 def get_chart_info(longitude, speed=None):
     """Return Rasi, Nakshatra, Pada, and retrograde status."""
-    # Calculate nakshatra
-    nakshatra_length = 360 / 27  # 13.333...
-    nakshatra_index = int((longitude % 360) // nakshatra_length)
+    # Calculate nakshatra (matching reference code exactly)
+    nakshatra_index = int((longitude % 360) // (360 / 27))
     
-    # Calculate pada
-    longitude_in_nakshatra = longitude % nakshatra_length
-    pada_length = nakshatra_length / 4  # 3.333...
-    pada = int((longitude_in_nakshatra / pada_length) + 1)
+    # Calculate pada (matching reference code exactly)
+    pada = int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     
     # Calculate rasi
     rasi_index = int(longitude // 30)
@@ -98,13 +95,13 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-    # Rahu/Ketu - True Node only (matching reference code)
+    # Rahu/Ketu - True Node only (matching reference code exactly)
     rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
     rahu_info = get_chart_info(rahu[0], rahu[3])
     results['Rahu'] = rahu_info
 
     ketu_lon = (rahu[0] + 180.0) % 360.0
-    ketu_info = get_chart_info(ketu_lon, rahu[3])
+    ketu_info = get_chart_info(ketu_lon, rahu[3])  # same speed (direction doesn't matter for chart info)
     ketu_info['retrograde'] = True  # Force retrograde = True
     results['Ketu'] = ketu_info
 
