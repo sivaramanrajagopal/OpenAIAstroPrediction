@@ -222,7 +222,7 @@ def root():
 @app.get("/predict")
 def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
-        logger.info(f"🚀 NEW PREDICT CODE RUNNING - V2.1 - dob={dob}, tob={tob}, lat={lat}, lon={lon}")
+        logger.info(f"🚀 NEW PREDICT CODE RUNNING - V2.2 - dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
         # Try original Swiss Ephemeris calculations first - matching original code structure
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
@@ -727,7 +727,7 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 Starting Vedic Astrology API V2.1 - FORCE REDEPLOY - on port {port}")
+    print(f"🚀 Starting Vedic Astrology API V2.2 - FORCE REDEPLOY - on port {port}")
     print(f"📊 Swiss Ephemeris: {'✅ Available' if SWISSEPH_AVAILABLE else '❌ Not Available'}")
     print(f"🔮 Astrology Modules: {'✅ Available' if MODULES_AVAILABLE else '❌ Not Available'}")
     print(f"🔧 Direct Swiss Ephemeris mode enabled for predict endpoint")
