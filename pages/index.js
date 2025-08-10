@@ -100,6 +100,239 @@ export default function Home() {
     tz_offset: '5.5',
     gender: 'Male'
   });
+  
+  const [locationDetected, setLocationDetected] = useState(false);
+  const [locationData, setLocationData] = useState({
+    city: '',
+    country: '',
+    timezone: '',
+    formatted_address: '',
+    detected: false
+  });
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
+  const [citySuggestions, setCitySuggestions] = useState([]);
+  
+  // Using secure server-side API routes instead of direct client-side calls
+  
+  // Secure Google API Functions using server-side routes
+  const reverseGeocode = async (lat, lon) => {
+    try {
+      const response = await fetch(
+        `/api/google-geocode?lat=${lat}&lng=${lon}`
+      );
+      const data = await response.json();
+      
+      if (response.ok && data.results && data.results.length > 0) {
+        const result = data.results[0];
+        const addressComponents = result.address_components;
+        
+        let city = '';
+        let country = '';
+        
+        addressComponents.forEach(component => {
+          if (component.types.includes('locality')) {
+            city = component.long_name;
+          } else if (component.types.includes('administrative_area_level_1') && !city) {
+            city = component.long_name;
+          } else if (component.types.includes('country')) {
+            country = component.long_name;
+          }
+        });
+        
+        return {
+          city,
+          country,
+          formatted_address: result.formatted_address
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Reverse geocoding failed:', error);
+      return null;
+    }
+  };
+  
+  const getTimezone = async (lat, lon, timestamp = null) => {
+    try {
+      const ts = timestamp || Math.floor(Date.now() / 1000);
+      const response = await fetch(
+        `/api/google-timezone?lat=${lat}&lng=${lon}&timestamp=${ts}`
+      );
+      const data = await response.json();
+      
+      if (response.ok) {
+        return {
+          timezone_id: data.timezone_id,
+          timezone_name: data.timezone_name,
+          raw_offset: data.raw_offset,
+          dst_offset: data.dst_offset,
+          total_offset: data.total_offset
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Timezone API failed:', error);
+      return null;
+    }
+  };
+  
+  const searchCity = async (query) => {
+    try {
+      const response = await fetch(
+        `/api/google-places?query=${encodeURIComponent(query)}`
+      );
+      const data = await response.json();
+      
+      if (response.ok) {
+        return data.suggestions || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('City search failed:', error);
+      return [];
+    }
+  };
+  
+  const getPlaceDetails = async (placeId) => {
+    try {
+      const response = await fetch(
+        `/api/google-geocode?placeId=${placeId}`
+      );
+      const data = await response.json();
+      
+      if (response.ok && data.result && data.result.geometry) {
+        const location = data.result.geometry.location;
+        return {
+          lat: location.lat,
+          lng: location.lng,
+          formatted_address: data.result.formatted_address
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Place details failed:', error);
+      return null;
+    }
+  };
+  
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      setLocationDetected(false);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lon = position.coords.longitude;
+          
+          // Update coordinates
+          setFormData(prev => ({
+            ...prev,
+            lat: lat.toString(),
+            lon: lon.toString()
+          }));
+          
+          // Get location details using Google APIs
+          const [locationDetails, timezoneData] = await Promise.all([
+            reverseGeocode(lat, lon),
+            getTimezone(lat, lon)
+          ]);
+          
+          if (locationDetails && timezoneData) {
+            const locationInfo = {
+              city: locationDetails.city,
+              country: locationDetails.country,
+              timezone: timezoneData.timezone_id,
+              formatted_address: locationDetails.formatted_address,
+              detected: true
+            };
+            
+            setLocationData(locationInfo);
+            setLocationDetected(true);
+            
+            // Calculate precise timezone offset
+            const totalOffset = timezoneData.total_offset || (timezoneData.raw_offset + timezoneData.dst_offset);
+            setFormData(prev => ({
+              ...prev,
+              tz_offset: totalOffset.toString()
+            }));
+          } else {
+            // Fallback to basic detection
+            setLocationDetected(true);
+            const basicOffset = Math.round(lon / 15);
+            const commonOffsets = {
+              13: '5.5', // India
+              80: '5.5', // India
+              '-74': '-5', // New York
+              '-118': '-8', // Los Angeles
+              '0': '0', // London
+              '139': '9' // Tokyo
+            };
+            
+            const detectedOffset = commonOffsets[Math.round(lon).toString()] || formData.tz_offset;
+            setFormData(prev => ({
+              ...prev,
+              tz_offset: detectedOffset
+            }));
+          }
+        },
+        (error) => {
+          console.error('Geolocation failed:', error);
+          alert('Please allow location access or enter coordinates manually');
+        }
+      );
+    } else {
+      alert('Geolocation is not supported by this browser');
+    }
+  };
+  
+  const handleCitySearch = async (value) => {
+    setCitySearchTerm(value);
+    if (value.length > 2) {
+      const suggestions = await searchCity(value);
+      setCitySuggestions(suggestions);
+    } else {
+      setCitySuggestions([]);
+    }
+  };
+  
+  const selectCity = async (suggestion) => {
+    const placeDetails = await getPlaceDetails(suggestion.place_id);
+    
+    if (placeDetails) {
+      // Update coordinates
+      setFormData(prev => ({
+        ...prev,
+        lat: placeDetails.lat.toString(),
+        lon: placeDetails.lng.toString()
+      }));
+      
+      // Get timezone for selected location
+      const timezoneData = await getTimezone(placeDetails.lat, placeDetails.lng);
+      
+      const locationInfo = {
+        city: suggestion.main_text || suggestion.description.split(',')[0],
+        country: suggestion.secondary_text || suggestion.description.split(',').pop().trim(),
+        timezone: timezoneData?.timezone_id || '',
+        formatted_address: placeDetails.formatted_address,
+        detected: true
+      };
+      
+      setLocationData(locationInfo);
+      setLocationDetected(true);
+      
+      if (timezoneData) {
+        const totalOffset = timezoneData.total_offset || (timezoneData.raw_offset + timezoneData.dst_offset);
+        setFormData(prev => ({
+          ...prev,
+          tz_offset: totalOffset.toString()
+        }));
+      }
+    }
+    
+    setCitySearchTerm(suggestion.description);
+    setCitySuggestions([]);
+    setShowLocationSearch(false);
+  };
 
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -113,10 +346,10 @@ export default function Home() {
   const [spouseAnalysis, setSpouseAnalysis] = useState(null);
   const [induDasa, setInduDasa] = useState(null);
 
-  // Backend URL - automatically detects environment
+  // Backend URL - automatically detects environment (updated to Railway)
   const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
                  (process.env.NODE_ENV === 'production' 
-                   ? 'https://openaiastroprediction.onrender.com'
+                   ? 'https://proactive-manifestation-production.up.railway.app'
                    : 'http://localhost:8000');
 
   const getPrediction = async () => {
@@ -262,6 +495,166 @@ export default function Home() {
 
         {/* Form */}
         <div style={{padding: '40px'}}>
+          {/* Location Search Component */}
+          <div style={{
+            marginBottom: '20px',
+            padding: '20px',
+            background: '#f8fafc',
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <h3 style={{
+              fontSize: '1.1rem',
+              fontWeight: '600',
+              color: '#374151',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <MapPin size={18} color="#667eea" />
+              Location Setup
+            </h3>
+            
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              marginBottom: '16px',
+              flexWrap: 'wrap'
+            }}>
+              <button
+                type="button"
+                onClick={getCurrentLocation}
+                style={{
+                  padding: '10px 16px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.3s'
+                }}
+              >
+                📍 Auto-Detect Location
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setShowLocationSearch(!showLocationSearch)}
+                style={{
+                  padding: '10px 16px',
+                  background: showLocationSearch ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  transition: 'all 0.3s'
+                }}
+              >
+                🔍 {showLocationSearch ? 'Hide' : 'Search'} City
+              </button>
+            </div>
+            
+            {showLocationSearch && (
+              <div style={{ position: 'relative', marginBottom: '16px' }}>
+                <input
+                  type="text"
+                  placeholder="Search city (e.g., Chennai, New York, London)"
+                  value={citySearchTerm}
+                  onChange={(e) => handleCitySearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '8px',
+                    fontSize: '16px',
+                    transition: 'border-color 0.3s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                  onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                />
+                
+                {citySuggestions.length > 0 && (
+                  <div style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: 0,
+                    right: 0,
+                    background: 'white',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '8px',
+                    maxHeight: '200px',
+                    overflowY: 'auto',
+                    zIndex: 1000,
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                  }}>
+                    {citySuggestions.map((suggestion, index) => (
+                      <div
+                        key={index}
+                        onClick={() => selectCity(suggestion)}
+                        style={{
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          borderBottom: index < citySuggestions.length - 1 ? '1px solid #f3f4f6' : 'none',
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      >
+                        <div style={{ fontWeight: '500', color: '#374151' }}>
+                          {suggestion.main_text || suggestion.description.split(',')[0]}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                          {suggestion.description}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {locationData.detected && (
+              <div style={{
+                background: 'linear-gradient(135deg, #ecfdf5, #d1fae5)',
+                border: '1px solid #10b981',
+                borderRadius: '8px',
+                padding: '12px 16px'
+              }}>
+                <div style={{
+                  fontSize: '14px',
+                  color: '#065f46',
+                  fontWeight: '600',
+                  marginBottom: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}>
+                  ✅ Location Detected
+                </div>
+                <div style={{ fontSize: '13px', color: '#047857' }}>
+                  {locationData.city && locationData.country && 
+                    `${locationData.city}, ${locationData.country}`}
+                </div>
+                {locationData.timezone && (
+                  <div style={{ fontSize: '13px', color: '#047857' }}>
+                    Timezone: {locationData.timezone}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
@@ -323,13 +716,14 @@ export default function Home() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: '2px solid #e5e7eb',
+                  border: locationDetected ? '2px solid #10b981' : '2px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '16px',
-                  transition: 'border-color 0.3s'
+                  transition: 'border-color 0.3s',
+                  background: locationDetected ? '#f0fdf4' : 'white'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                onBlur={(e) => e.target.style.borderColor = locationDetected ? '#10b981' : '#e5e7eb'}
               />
             </div>
 
@@ -346,16 +740,66 @@ export default function Home() {
                 style={{
                   width: '100%',
                   padding: '12px',
+                  border: locationDetected ? '2px solid #10b981' : '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  transition: 'border-color 0.3s',
+                  background: locationDetected ? '#f0fdf4' : 'white'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                onBlur={(e) => e.target.style.borderColor = locationDetected ? '#10b981' : '#e5e7eb'}
+              />
+            </div>
+            
+            <div>
+              <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151'}}>
+                <Clock size={16} color="#6b7280" /> Timezone Offset (Hours)
+              </label>
+              <input
+                type="number"
+                step="0.5"
+                placeholder="e.g., 5.5"
+                value={formData.tz_offset}
+                onChange={(e) => setFormData({...formData, tz_offset: e.target.value})}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: locationDetected ? '2px solid #10b981' : '2px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '16px',
+                  transition: 'border-color 0.3s',
+                  background: locationDetected ? '#f0fdf4' : 'white'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                onBlur={(e) => e.target.style.borderColor = locationDetected ? '#10b981' : '#e5e7eb'}
+              />
+            </div>
+            
+            <div>
+              <label style={{display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151'}}>
+                👤 Gender
+              </label>
+              <select
+                value={formData.gender}
+                onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                style={{
+                  width: '100%',
+                  padding: '12px',
                   border: '2px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '16px',
-                  transition: 'border-color 0.3s'
+                  transition: 'border-color 0.3s',
+                  background: 'white'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#667eea'}
                 onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
-              />
+              >
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
             </div>
           </div>
+
 
           <button
             onClick={() => {
