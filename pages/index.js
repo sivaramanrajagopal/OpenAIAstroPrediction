@@ -346,11 +346,8 @@ export default function Home() {
   const [spouseAnalysis, setSpouseAnalysis] = useState(null);
   const [induDasa, setInduDasa] = useState(null);
 
-  // Backend URL - automatically detects environment (updated to Railway)
-  const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
-                 (process.env.NODE_ENV === 'production' 
-                   ? 'https://proactive-manifestation-production.up.railway.app'
-                   : 'http://localhost:8000');
+  // Backend URL - temporarily hard-coded to Railway for debugging
+  const backend = 'https://proactive-manifestation-production.up.railway.app';
 
   const getPrediction = async () => {
     console.log('🚀 Button clicked! Form data:', formData);
