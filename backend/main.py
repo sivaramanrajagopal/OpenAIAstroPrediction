@@ -216,8 +216,11 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 logger.info("Attempting Swiss Ephemeris calculation...")
                 data = get_planet_positions(dob, tob, lat, lon, tz_offset)
                 logger.info("Swiss Ephemeris calculation successful.")
+                logger.info(f"Planet data type: {type(data)}, count: {len(data) if isinstance(data, dict) else 'N/A'}")
                 prompt = generate_gpt_prompt(data)
+                logger.info("GPT prompt generated successfully.")
                 interpretation = get_astrology_interpretation(prompt)
+                logger.info("GPT interpretation completed.")
                 # Return exact format as original code
                 return {
                     "chart": data,
@@ -226,10 +229,20 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                     "calculation_method": "swiss_ephemeris"
                 }
             except Exception as e:
-                logger.error(f"Original Swiss Ephemeris calculation failed: {str(e)}")
+                logger.error(f"Swiss Ephemeris calculation failed: {str(e)}")
                 logger.error(f"Error type: {type(e).__name__}")
                 import traceback
-                logger.error(f"Traceback: {traceback.format_exc()}")
+                logger.error(f"Full traceback: {traceback.format_exc()}")
+                
+                # Try to identify which specific function failed
+                try:
+                    logger.info("Testing individual function calls...")
+                    test_data = get_planet_positions(dob, tob, lat, lon, tz_offset)
+                    logger.info("get_planet_positions works fine")
+                    test_prompt = generate_gpt_prompt(test_data)
+                    logger.info("generate_gpt_prompt works fine")
+                except Exception as test_e:
+                    logger.error(f"Individual function test failed: {test_e}")
         
         # Fallback to hardcoded accurate data for the test birth details
         if dob == "1978-09-18" and tob == "17:35":
