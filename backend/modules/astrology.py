@@ -121,17 +121,31 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     print(f"🔍 ENHANCED CALCULATION: {dob} {tob} at {lat}, {lon}")
     print(f"🔍 Original local time: {local_dt}")
     
-    # CRITICAL FIX 2: Use pytz for accurate timezone conversion
-    if tz_offset == 5.5:  # IST
-        timezone_name = "Asia/Calcutta"
+    # CRITICAL FIX 2: Use TimezoneFinder for precise timezone detection (like working repository)
+    try:
+        from .global_timezone_utils import get_timezone_from_coordinates
+        
+        # Detect timezone from coordinates (matching working repository approach)
+        timezone_name = get_timezone_from_coordinates(lat, lon)
+        print(f"🔍 TimezoneFinder detected: {timezone_name}")
+        
         tz = pytz.timezone(timezone_name)
         local_dt = tz.localize(local_dt)
         utc_dt = local_dt.astimezone(pytz.UTC)
-        print(f"🔍 Using pytz Asia/Calcutta timezone")
-    else:
-        # Fallback for other timezones
-        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-        utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
+        print(f"🔍 Using precise timezone: {timezone_name}")
+        
+    except Exception as e:
+        print(f"🔍 TimezoneFinder failed: {e}")
+        # Fallback to manual timezone
+        if tz_offset == 5.5:  # IST
+            timezone_name = "Asia/Calcutta"
+            tz = pytz.timezone(timezone_name)
+            local_dt = tz.localize(local_dt)
+            utc_dt = local_dt.astimezone(pytz.UTC)
+            print(f"🔍 Using fallback Asia/Calcutta timezone")
+        else:
+            utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+            utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
     
     print(f"🔍 UTC time with pytz: {utc_dt}")
 
