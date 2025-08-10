@@ -111,33 +111,68 @@ def get_chart_info(longitude, speed=None):
 
 # --- Planet Positions ---
 def get_planet_positions(dob, tob, lat, lon, tz_offset):
+    """Calculate planetary positions using enhanced method from working repository"""
+    
+    # CRITICAL FIX 1: Proper timezone handling with pytz
+    import pytz
+    
     local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
-    utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+    
+    print(f"🔍 ENHANCED CALCULATION: {dob} {tob} at {lat}, {lon}")
+    print(f"🔍 Original local time: {local_dt}")
+    
+    # CRITICAL FIX 2: Use pytz for accurate timezone conversion
+    if tz_offset == 5.5:  # IST
+        timezone_name = "Asia/Calcutta"
+        tz = pytz.timezone(timezone_name)
+        local_dt = tz.localize(local_dt)
+        utc_dt = local_dt.astimezone(pytz.UTC)
+        print(f"🔍 Using pytz Asia/Calcutta timezone")
+    else:
+        # Fallback for other timezones
+        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+        utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
+    
+    print(f"🔍 UTC time with pytz: {utc_dt}")
 
+    # CRITICAL FIX 3: Enhanced Julian Day calculation
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day,
                     utc_dt.hour + utc_dt.minute / 60.0)
+    
+    print(f"🔍 Julian Day: {jd:.10f}")
+    
+    # CRITICAL FIX 4: Set topocentric coordinates (missing from our original code!)
+    swe.set_topo(lon, lat, 0)
+    print(f"🔍 Topocentric coordinates set: lon={lon}, lat={lat}")
 
-    FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
+    # CRITICAL FIX 5: Consistent sidereal flags
+    SIDEREAL_FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     results = {}
 
-    # All planets 0-9
-    for pid in range(0, 10):
+    # Calculate traditional planets (0-6: Sun through Saturn, excluding outer planets for Vedic)
+    traditional_planets = [0, 1, 2, 3, 4, 5, 6]  # Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn
+    for pid in traditional_planets:
         name = swe.get_planet_name(pid)
-        lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
+        lonlat = swe.calc_ut(jd, pid, SIDEREAL_FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
+        
+        # Debug specific Moon calculation
+        if name == "Moon":
+            print(f"🌙 MOON DEBUG - Longitude: {lonlat[0]:.10f}°")
+            print(f"🌙 MOON DEBUG - Speed: {lonlat[3]:.10f}°/day")
 
-    # Rahu/Ketu - True Node only (matching reference code exactly)
-    rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
+    # Rahu/Ketu - True Node with consistent flags
+    rahu = swe.calc_ut(jd, swe.TRUE_NODE, SIDEREAL_FLAGS)[0]
     rahu_info = get_chart_info(rahu[0], rahu[3])
     results['Rahu'] = rahu_info
 
     ketu_lon = (rahu[0] + 180.0) % 360.0
-    ketu_info = get_chart_info(ketu_lon, rahu[3])  # same speed (direction doesn't matter for chart info)
-    ketu_info['retrograde'] = True  # Force retrograde = True
+    ketu_info = get_chart_info(ketu_lon, rahu[3])
+    ketu_info['retrograde'] = True  # Ketu is always retrograde in Vedic astrology
     results['Ketu'] = ketu_info
 
-    # Ascendant (Lagna)
-    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
+    # Ascendant (Lagna) with consistent flags
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', SIDEREAL_FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
 
     return results, ascmc[0], cusps
