@@ -165,10 +165,10 @@ export default function Home() {
           calculation_method: chartRes.calculation_method
         });
         
-        setCareer(careerRes.report || "Career analysis in progress...");
-        setDasa(dasaRes.dasa_timeline?.[2] || []); // Extract the timeline array from the response
+        setCareer(careerRes.career_report || "Career analysis in progress...");
+        setDasa(dasaRes.dasa_table || []); // Use dasa_table from backend
         setYogas(yogasRes.yogas || []);
-        setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress...");
+        setLifePurpose(lifePurposeRes.interpretation || "Life purpose analysis in progress..."); // Use interpretation from backend
         setDasaBhukti(dasaBhuktiRes.table || []); // Use the table array from the response
         setSpouseAnalysis({
           ...spouseRes.spouse_analysis,
