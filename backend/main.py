@@ -725,11 +725,15 @@ def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5
         logger.error(f"Error in indu_dasa endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
+# Startup logging (Procfile handles uvicorn startup)
+print(f"🚀 Vedic Astrology API V2.3 - MOON PADA 3 FIX - Module Loading Complete")
+print(f"📊 Swiss Ephemeris: {'✅ Available' if SWISSEPH_AVAILABLE else '❌ Not Available'}")
+print(f"🔮 Astrology Modules: {'✅ Available' if MODULES_AVAILABLE else '❌ Not Available'}")
+print(f"🕐 Ready for deployment with correct Moon pada 3 calculation")
+
 if __name__ == "__main__":
+    # Local development only - Render uses Procfile
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    print(f"🚀 Starting Vedic Astrology API V2.3 - MOON PADA 3 FIX DEPLOY - on port {port}")
-    print(f"📊 Swiss Ephemeris: {'✅ Available' if SWISSEPH_AVAILABLE else '❌ Not Available'}")
-    print(f"🔮 Astrology Modules: {'✅ Available' if MODULES_AVAILABLE else '❌ Not Available'}")
-    print(f"🕐 Deployment Time: 2025-01-10T03:15:00Z")
+    print(f"🚀 Local development mode on port {port}")
     uvicorn.run(app, host="0.0.0.0", port=port)
