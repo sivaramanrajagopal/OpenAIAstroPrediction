@@ -11,22 +11,53 @@ load_dotenv()
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
-# Set ephemeris path and sidereal mode
+# Enhanced ephemeris configuration for deployment consistency
 import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)  # Go up one level to backend root
 ephe_path = os.path.join(parent_dir, 'ephe')  # Point to backend/ephe directory
-print(f"Current directory: {current_dir}")
-print(f"Parent directory: {parent_dir}")
-print(f"Ephemeris path: {ephe_path}")
-print(f"Ephemeris path exists: {os.path.exists(ephe_path)}")
+
+print(f"🔍 EPHEMERIS SETUP:")
+print(f"   Current directory: {current_dir}")
+print(f"   Parent directory: {parent_dir}")
+print(f"   Ephemeris path: {ephe_path}")
+print(f"   Ephemeris path exists: {os.path.exists(ephe_path)}")
+
 if os.path.exists(ephe_path):
-    swe.set_ephe_path(ephe_path)
-    print(f"✅ Set ephemeris path to: {ephe_path}")
+    # Verify critical ephemeris files exist
+    critical_files = ['semo_00.se1', 'seas_00.se1', 'sepl_00.se1']
+    missing_files = [f for f in critical_files if not os.path.exists(os.path.join(ephe_path, f))]
+    
+    if missing_files:
+        print(f"⚠️ Missing ephemeris files: {missing_files}")
+        print(f"⚠️ Using default ephemeris path as fallback")
+        swe.set_ephe_path('.')
+    else:
+        swe.set_ephe_path(ephe_path)
+        print(f"✅ Set ephemeris path to: {ephe_path}")
+        
+        # Verify ephemeris files are loaded correctly
+        try:
+            # Test calculation to ensure ephemeris files work
+            test_jd = swe.julday(2000, 1, 1, 12.0)
+            test_calc = swe.calc_ut(test_jd, swe.SUN, swe.FLG_SIDEREAL)
+            print(f"✅ Ephemeris files validated (Sun at J2000: {test_calc[0][0]:.2f}°)")
+        except Exception as e:
+            print(f"⚠️ Ephemeris validation failed: {e}")
+            swe.set_ephe_path('.')
 else:
     print(f"⚠️ Ephemeris path not found, using default")
     swe.set_ephe_path('.')
+
+# Set sidereal mode with validation
 swe.set_sid_mode(swe.SIDM_LAHIRI)
+print(f"✅ Sidereal mode set to LAHIRI")
+
+# Log PySwisseph version for debugging
+try:
+    print(f"✅ PySwisseph version: {swe.version}")
+except:
+    print(f"⚠️ PySwisseph version not available")
 
 # 27 Nakshatras and 12 Rasis
 nakshatras = [
