@@ -69,11 +69,16 @@ logger = logging.getLogger(__name__)
 
 # Try to import modules with fallback - isolate problematic imports
 try:
-    # SIMPLIFIED IMPORTS - ONLY WHAT'S NEEDED FOR PREDICT ENDPOINT
+    # CORE MODULES
     from modules.astrology import get_planet_positions, generate_gpt_prompt, get_astrology_interpretation
     print("✅ Astrology module imported")
+    
+    # ADDING BACK MODULES ONE BY ONE
+    from modules.career import analyze_career, generate_career_report, get_planet_positions as get_career_planet_positions
+    print("✅ Career module imported")
+    
     MODULES_AVAILABLE = True
-    print("✅ Core astrology module loaded successfully")
+    print("✅ Astrology modules loaded successfully")
 except ImportError as e:
     MODULES_AVAILABLE = False
     print(f"⚠️  Astrology modules not available: {e}")
@@ -257,16 +262,31 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.error(f"Error in predict endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT - FOCUSING ON PREDICT ENDPOINT ONLY
-# @app.get("/career")
-# def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
-#     try:
-#         logger.info(f"Career endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, gender={gender}")
-#         # ... career logic commented out for now
-#         return {"career_report": "Career analysis temporarily disabled"}
-#     except Exception as e:
-#         logger.error(f"Error in career endpoint: {str(e)}")
-#         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+@app.get("/career")
+def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
+    try:
+        logger.info(f"Career endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, gender={gender}")
+        
+        # Try real calculations first
+        if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
+            try:
+                local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
+                utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+                jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
+                
+                data, asc_deg, cusps = get_career_planet_positions(jd, lat, lon)
+                analysis = analyze_career(data, asc_deg, cusps, gender)
+                report = generate_career_report(analysis, asc_deg)
+                return {"career_report": report}
+            except Exception as e:
+                logger.warning(f"Career analysis calculation failed: {str(e)}")
+        
+        # Fallback career analysis
+        return {"career_report": "Career analysis fallback - module loading issue"}
+        
+    except Exception as e:
+        logger.error(f"Error in career endpoint: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
 # TEMPORARILY COMMENTED OUT - ALL ENDPOINTS EXCEPT PREDICT
 # @app.get("/dasa")
