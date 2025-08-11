@@ -73,7 +73,7 @@ try:
     print("✅ Astrology module imported")
     from modules.career import analyze_career, generate_career_report, get_planet_positions as get_career_planet_positions
     print("✅ Career module imported")
-    from modules.allyogas import detect_yogas, get_planet_positions as get_yogas_planet_positions
+    from modules.allyogas import detect_yogas, get_yogas_planet_positions
     print("✅ All yogas module imported")
     # Temporarily comment out dasa imports to isolate the issue
     # from modules.dasa import generate_dasa_table
