@@ -217,6 +217,15 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     """
     print("🚀🚀🚀 ASTROLOGY.PY - WORKING REPOSITORY calculation method - MOON SHOULD BE 354.14° 🚀🚀🚀")
     print("🔥🔥🔥 THIS IS THE CORRECT FUNCTION FROM astrology.py - NOT A CONFLICT! 🔥🔥🔥")
+    print(f"🔍 FUNCTION DEBUG: Called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, tz_offset={tz_offset}")
+    print(f"🔍 FUNCTION LOCATION: {__file__}")
+    
+    # TEST: Let's see what our local working implementation returns
+    import os
+    if os.environ.get('RAILWAY_ENVIRONMENT'):
+        print("🚂 RUNNING ON RAILWAY - Testing working implementation")
+    else:
+        print("💻 RUNNING LOCALLY")
     
     # Convert parameters to appropriate types
     latitude = float(lat)
@@ -231,6 +240,21 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
             longitude=longitude,
             timezone_name=None  # Auto-detect
         )
+        
+        # Debug: Check what we actually calculated
+        if 'Moon' in positions:
+            moon_data = positions['Moon']
+            print(f"🔍 CALCULATED MOON - Longitude: {moon_data.get('longitude', 'missing'):.10f}°")
+            print(f"🔍 CALCULATED MOON - Pada: {moon_data.get('pada', 'missing')}")
+            print(f"🔍 CALCULATED MOON - Nakshatra: {moon_data.get('nakshatra', 'missing')}")
+            print(f"🔍 CALCULATED MOON - Rasi: {moon_data.get('rasi', 'missing')}")
+            
+            if abs(moon_data.get('longitude', 0) - 354.14) < 0.1:
+                print("✅ MOON CALCULATION IS CORRECT!")
+            else:
+                print(f"❌ MOON CALCULATION IS WRONG! Expected ~354.14°, got {moon_data.get('longitude', 0):.2f}°")
+        else:
+            print("🚨 NO MOON DATA IN RESULT!")
         
         return positions, ascendant, cusps
         
