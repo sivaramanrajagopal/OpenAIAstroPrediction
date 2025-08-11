@@ -188,10 +188,13 @@ def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.datetime.now().isoformat(),
-        "version": "1.0.0",
-        "message": "Vedic Astrology API is running successfully!",
+        "version": "2.0.0-WORKING-REPO",
+        "message": "Vedic Astrology API with Working Repository Calculations!",
         "swiss_ephemeris": SWISSEPH_AVAILABLE,
-        "astrology_modules": MODULES_AVAILABLE
+        "astrology_modules": MODULES_AVAILABLE,
+        "astrology_engine": "AstrologyResearchDatabase-Compatible",
+        "moon_test_longitude": "Should be ~354.14° (not 353.26°)",
+        "moon_test_pada": "Should be pada 3 (not pada 2)"
     }
 
 @app.get("/")
