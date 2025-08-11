@@ -166,7 +166,7 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, 
                     utc_dt.hour + utc_dt.minute / 60.0)
     
-    # Set topocentric coordinates (essential for accuracy)
+    # Set topocentric coordinates (longitude first, latitude second - as per reference)
     swe.set_topo(longitude, latitude, 0)
     
     # Verify ayanamsa - critical for accuracy
@@ -207,8 +207,8 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     ketu_info['retrograde'] = True  # Ketu is always retrograde
     planetary_positions['Ketu'] = ketu_info
     
-    # Ascendant and House Cusps - Use Equal House system for Vedic astrology
-    cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'E', flags)  # Equal houses for Vedic
+    # Ascendant and House Cusps - Use same system as reference code
+    cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=flags)  # 'O' system as per reference
     ascendant_longitude = ascmc[0]
     
     # Debug Ascendant calculation
