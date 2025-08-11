@@ -80,6 +80,15 @@ try:
     from modules.allyogas import detect_yogas, get_yogas_planet_positions
     print("✅ Yogas module imported")
     
+    from modules.life_purpose import analyze_life_purpose, generate_purpose_report, ask_gpt, get_planet_positions as get_life_purpose_planet_positions
+    print("✅ Life purpose module imported")
+    
+    from modules.spouse_analysis import get_planet_positions as get_spouse_planet_positions, get_aspects, analyze_marriage, generate_report, ask_gpt_spouse
+    print("✅ Spouse analysis module imported")
+    
+    from modules.indu_dasa import get_indu_dasa
+    print("✅ Indu dasa module imported")
+    
     MODULES_AVAILABLE = True
     print("✅ Astrology modules loaded successfully")
 except ImportError as e:
@@ -291,12 +300,8 @@ def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, g
         logger.error(f"Error in career endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT - ALL ENDPOINTS EXCEPT PREDICT
-# @app.get("/dasa")
-# def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
-#     return {"message": "Endpoint temporarily disabled for debugging"}
-
-def placeholder_dasa():
+@app.get("/dasa")
+def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Dasa endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -369,9 +374,8 @@ def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.error(f"Error in yogas endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT
-# @app.get("/life_purpose")
-# def life_purpose(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+@app.get("/life_purpose")
+def life_purpose(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Life purpose endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -427,9 +431,8 @@ Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
         logger.error(f"Error in life_purpose endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT
-# @app.get("/dasa_bhukti")
-# def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+@app.get("/dasa_bhukti")
+def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Dasa bhukti endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -542,9 +545,8 @@ Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
         logger.error(f"Error in dasa_bhukti endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT
-# @app.get("/spouse")
-# def spouse(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
+@app.get("/spouse")
+def spouse(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
     try:
         logger.info(f"Spouse endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, gender={gender}")
         
@@ -614,9 +616,8 @@ Provide insights on spouse characteristics, marriage timing, relationship compat
         logger.error(f"Error in spouse endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT
-# @app.get("/indu_dasa")
-# def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+@app.get("/indu_dasa")
+def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Indu dasa endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
