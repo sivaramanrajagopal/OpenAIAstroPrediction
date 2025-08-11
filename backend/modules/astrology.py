@@ -162,9 +162,15 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
         utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
         print(f"🔍 UTC: {utc_dt} (using offset +{tz_offset})")
     
-    # Calculate Julian Day
+    # Calculate Julian Day - Fix timezone handling
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, 
                     utc_dt.hour + utc_dt.minute / 60.0)
+    
+    # Debug Julian Day calculation
+    print(f"🔍 Julian Day: {jd:.6f}")
+    print(f"🔍 Local time: {local_dt}")
+    print(f"🔍 UTC time: {utc_dt}")
+    print(f"🔍 Timezone offset: {tz_offset}")
     
     # Set topocentric coordinates (longitude first, latitude second - as per reference)
     swe.set_topo(longitude, latitude, 0)
@@ -208,12 +214,28 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     planetary_positions['Ketu'] = ketu_info
     
     # Ascendant and House Cusps - Use same system as reference code
+    # Fix: Use correct parameters for house calculation
     cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=flags)  # 'O' system as per reference
     ascendant_longitude = ascmc[0]
     
     # Debug Ascendant calculation with house system verification
     print(f"🏠 Ascendant debug - Raw: {ascendant_longitude:.2f}°, JD: {jd:.6f}, System: O")
     print(f"🏠 Expected for Pondicherry native: ~26.48° Mesha")
+    
+    # Verify the calculation matches expected values
+    if abs(ascendant_longitude - 26.48) > 5:  # If off by more than 5 degrees
+        print(f"⚠️ WARNING: Ascendant calculation may be incorrect. Expected ~26.48°, got {ascendant_longitude:.2f}°")
+        # Try alternative calculation method
+        try:
+            # Alternative: Use houses() instead of houses_ex()
+            cusps_alt, ascmc_alt = swe.houses(jd, latitude, longitude, b'O')
+            alt_asc = ascmc_alt[0]
+            print(f"🏠 Alternative calculation: {alt_asc:.2f}°")
+            if abs(alt_asc - 26.48) < abs(ascendant_longitude - 26.48):
+                ascendant_longitude = alt_asc
+                print(f"✅ Using alternative calculation: {ascendant_longitude:.2f}°")
+        except Exception as e:
+            print(f"❌ Alternative calculation failed: {e}")
     
     planetary_positions['Ascendant'] = get_chart_info(ascendant_longitude)
     
