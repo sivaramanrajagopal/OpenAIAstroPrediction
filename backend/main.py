@@ -230,12 +230,12 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.info(f"🔍 MODULES_AVAILABLE: {MODULES_AVAILABLE}")
         logger.info(f"🔍 SWISSEPH_AVAILABLE: {SWISSEPH_AVAILABLE}")
         
-        # Try original Swiss Ephemeris calculations first - matching original code structure
+        # Use new Working Repository calculations
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
-                logger.info("🔍 Attempting Swiss Ephemeris calculation...")
+                logger.info("🔍 Attempting WORKING REPOSITORY calculation method...")
                 data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
-                logger.info("🔍 Swiss Ephemeris calculation successful.")
+                logger.info("🔍 Working Repository calculation successful.")
                 
                 # DEBUG: Log Moon data specifically
                 if 'Moon' in data:
@@ -254,7 +254,7 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                     "chart": data,
                     "interpretation": interpretation,
                     "status": "success",
-                    "calculation_method": "swiss_ephemeris"
+                    "calculation_method": "working_repository_swiss_ephemeris"
                 }
             except Exception as e:
                 logger.error(f"🚨 SWISS EPHEMERIS CALCULATION FAILED: {str(e)}")
@@ -263,83 +263,9 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
                 logger.error(f"🚨 Full traceback: {traceback.format_exc()}")
                 logger.error(f"🚨 FALLING BACK TO HARDCODED DATA!")
         
-        # Fallback to hardcoded accurate data for the test birth details
-        if dob == "1978-09-18" and tob == "17:35":
-            logger.info("Using hardcoded accurate data for test case - FORCE REDEPLOY")
-            chart_data = {
-                "Sun": {"longitude": 151.66, "rasi": "Kanni", "rasi_lord": "Mercury", "nakshatra": "Uttara Phalguni", "nakshatra_lord": "Sun", "pada": 2, "degrees_in_rasi": 1.66, "retrograde": False},
-                "Moon": {"longitude": 354.14, "rasi": "Meena", "rasi_lord": "Jupiter", "nakshatra": "Revati", "nakshatra_lord": "Mercury", "pada": 3, "degrees_in_rasi": 24.14, "retrograde": False},
-                "Mars": {"longitude": 185.52, "rasi": "Thula", "rasi_lord": "Venus", "nakshatra": "Chitra", "nakshatra_lord": "Mars", "pada": 4, "degrees_in_rasi": 5.52, "retrograde": False},
-                "Mercury": {"longitude": 141.28, "rasi": "Simha", "rasi_lord": "Sun", "nakshatra": "Purva Phalguni", "nakshatra_lord": "Venus", "pada": 3, "degrees_in_rasi": 21.28, "retrograde": False},
-                "Jupiter": {"longitude": 98.84, "rasi": "Kataka", "rasi_lord": "Moon", "nakshatra": "Pushya", "nakshatra_lord": "Saturn", "pada": 2, "degrees_in_rasi": 8.84, "retrograde": False},
-                "Venus": {"longitude": 195.89, "rasi": "Thula", "rasi_lord": "Venus", "nakshatra": "Swati", "nakshatra_lord": "Rahu", "pada": 3, "degrees_in_rasi": 15.89, "retrograde": False},
-                "Saturn": {"longitude": 133.16, "rasi": "Simha", "rasi_lord": "Sun", "nakshatra": "Magha", "nakshatra_lord": "Ketu", "pada": 4, "degrees_in_rasi": 13.16, "retrograde": False},
-                "Rahu": {"longitude": 153.18, "rasi": "Kanni", "rasi_lord": "Mercury", "nakshatra": "Uttara Phalguni", "nakshatra_lord": "Sun", "pada": 2, "degrees_in_rasi": 3.18, "retrograde": True},
-                "Ketu": {"longitude": 333.18, "rasi": "Meena", "rasi_lord": "Jupiter", "nakshatra": "Purva Bhadrapada", "nakshatra_lord": "Jupiter", "pada": 4, "degrees_in_rasi": 3.18, "retrograde": True},
-                "Ascendant": {"longitude": 322.65, "rasi": "Kumbha", "rasi_lord": "Saturn", "nakshatra": "Purva Bhadrapada", "nakshatra_lord": "Jupiter", "pada": 1, "degrees_in_rasi": 22.65, "retrograde": None}
-            }
-            
-            # Use GPT for better analysis even with fallback data
-            try:
-                if MODULES_AVAILABLE:
-                    prompt = generate_gpt_prompt(chart_data)
-                    gpt_interpretation = get_astrology_interpretation(prompt)
-                else:
-                    gpt_interpretation = f"✨ Precise Vedic Analysis for {dob} at {tob} (Chennai: {lat}°, {lon}°)\n\n" \
-                                       f"Your birth chart reveals fascinating cosmic alignments. Sun at 151.66° in Kanni (Uttara Phalguni nakshatra, Pada 2) " \
-                                       f"indicates strong analytical abilities, perfectionist nature, and success through service and helping others.\n\n" \
-                                       f"Moon at 354.14° in Meena (Revati nakshatra, Pada 3) shows deep emotional intelligence, spiritual inclinations, " \
-                                       f"and natural healing abilities. This Moon position brings success in travel, foreign connections, and creative pursuits.\n\n" \
-                                       f"The combination of Sun in Kanni and Moon in Meena creates a person who is both practical and spiritual, " \
-                                       f"with excellent problem-solving abilities and a compassionate nature."
-            except:
-                gpt_interpretation = f"✨ Precise Vedic Analysis for {dob} at {tob} (Chennai: {lat}°, {lon}°)\n\n" \
-                                   f"Your birth chart reveals fascinating cosmic alignments. Sun at 151.66° in Kanni (Uttara Phalguni nakshatra, Pada 2) " \
-                                   f"indicates strong analytical abilities, perfectionist nature, and success through service and helping others.\n\n" \
-                                   f"Moon at 354.14° in Meena (Revati nakshatra, Pada 3) shows deep emotional intelligence, spiritual inclinations, " \
-                                   f"and natural healing abilities. This Moon position brings success in travel, foreign connections, and creative pursuits.\n\n" \
-                                   f"The combination of Sun in Kanni and Moon in Meena creates a person who is both practical and spiritual, " \
-                                   f"with excellent problem-solving abilities and a compassionate nature."
-            
-            return {
-                "chart": chart_data,
-                "interpretation": gpt_interpretation,
-                "status": "success",
-                "calculation_method": "hardcoded_accurate"
-            }
-        
-        # General fallback for other birth data
-        logger.info("Using general fallback calculation")
-        local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
-        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-        jd = fallback_julian_day(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
-        
-        chart_data = fallback_planet_positions(jd, lat, lon)
-        
-        # Try GPT analysis for fallback data too
-        try:
-            if MODULES_AVAILABLE:
-                prompt = generate_gpt_prompt(chart_data)
-                gpt_interpretation = get_astrology_interpretation(prompt)
-            else:
-                gpt_interpretation = f"✨ Vedic Analysis for {dob} at {tob} (Location: {lat}°, {lon}°)\n\n" \
-                                   f"Your birth chart shows significant planetary alignments. The Sun in {chart_data['Sun']['rasi']} " \
-                                   f"indicates strong analytical abilities and attention to detail. Moon in {chart_data['Moon']['rasi']} " \
-                                   f"suggests a balanced and harmonious nature with excellent relationship skills.\n\n" \
-                                   f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
-        except:
-            gpt_interpretation = f"✨ Vedic Analysis for {dob} at {tob} (Location: {lat}°, {lon}°)\n\n" \
-                               f"Your birth chart shows significant planetary alignments. The Sun in {chart_data['Sun']['rasi']} " \
-                               f"indicates strong analytical abilities and attention to detail. Moon in {chart_data['Moon']['rasi']} " \
-                               f"suggests a balanced and harmonious nature with excellent relationship skills.\n\n" \
-                               f"Note: This uses computed positions. For precise calculations, Swiss Ephemeris integration is being optimized."
-        
-        return {
-            "chart": chart_data,
-            "interpretation": gpt_interpretation,
-            "status": "success",
-            "calculation_method": "fallback_astronomical"
-        }
+        # No more hardcoded fallback - force calculation error handling instead
+        logger.error("🚨 WORKING REPOSITORY CALCULATION FAILED - This should not happen!")
+        raise HTTPException(status_code=500, detail="Astrology calculation system failed - please try again")
         
     except Exception as e:
         logger.error(f"Error in predict endpoint: {str(e)}")
