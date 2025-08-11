@@ -6,11 +6,11 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_BACKEND_URL": "https://openaiastroprediction.onrender.com"
+    "NEXT_PUBLIC_BACKEND_URL": "https://proactive-manifestation-production.up.railway.app"
   },
   "build": {
     "env": {
-      "NEXT_PUBLIC_BACKEND_URL": "https://openaiastroprediction.onrender.com"
+      "NEXT_PUBLIC_BACKEND_URL": "https://proactive-manifestation-production.up.railway.app"
     }
   }
 }
