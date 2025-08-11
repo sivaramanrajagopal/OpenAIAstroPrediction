@@ -211,8 +211,9 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=flags)  # 'O' system as per reference
     ascendant_longitude = ascmc[0]
     
-    # Debug Ascendant calculation
-    print(f"🏠 Ascendant debug - Raw: {ascendant_longitude:.2f}°, JD: {jd:.6f}")
+    # Debug Ascendant calculation with house system verification
+    print(f"🏠 Ascendant debug - Raw: {ascendant_longitude:.2f}°, JD: {jd:.6f}, System: O")
+    print(f"🏠 Expected for Pondicherry native: ~26.48° Mesha")
     
     planetary_positions['Ascendant'] = get_chart_info(ascendant_longitude)
     
