@@ -215,7 +215,8 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     """
     Wrapper function to maintain compatibility with current API
     """
-    print("🚀 ASTROLOGY.PY - WORKING REPOSITORY calculation method - MOON SHOULD BE 354.14°")
+    print("🚀🚀🚀 ASTROLOGY.PY - WORKING REPOSITORY calculation method - MOON SHOULD BE 354.14° 🚀🚀🚀")
+    print("🔥🔥🔥 THIS IS THE CORRECT FUNCTION FROM astrology.py - NOT A CONFLICT! 🔥🔥🔥")
     
     # Convert parameters to appropriate types
     latitude = float(lat)
