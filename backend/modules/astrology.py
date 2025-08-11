@@ -197,7 +197,9 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     rahu_result = swe.calc_ut(jd, swe.TRUE_NODE, flags)
     rahu_longitude = rahu_result[0][0]
     rahu_speed = rahu_result[0][3]
-    planetary_positions['Rahu'] = get_chart_info(rahu_longitude, rahu_speed)
+    rahu_info = get_chart_info(rahu_longitude, rahu_speed)
+    rahu_info['retrograde'] = True  # Rahu is always retrograde in Vedic astrology
+    planetary_positions['Rahu'] = rahu_info
     
     # Ketu (180° opposite to Rahu)
     ketu_longitude = (rahu_longitude + 180.0) % 360.0
@@ -205,10 +207,16 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     ketu_info['retrograde'] = True  # Ketu is always retrograde
     planetary_positions['Ketu'] = ketu_info
     
-    # Ascendant and House Cusps
-    cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'P', flags)  # Placidus houses
+    # Ascendant and House Cusps - Use Equal House system for Vedic astrology
+    # Also ensure we're using sidereal calculations for houses
+    cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'E', flags)  # Equal houses for Vedic
     ascendant_longitude = ascmc[0]
-    planetary_positions['Ascendant'] = get_chart_info(ascendant_longitude)
+    
+    # Apply sidereal correction to Ascendant if needed
+    ayanamsa = swe.get_ayanamsa_ut(jd)
+    sidereal_ascendant = (ascendant_longitude - ayanamsa) % 360.0
+    
+    planetary_positions['Ascendant'] = get_chart_info(sidereal_ascendant)
     
     print("✅ Planetary calculations complete using working repository method")
     
