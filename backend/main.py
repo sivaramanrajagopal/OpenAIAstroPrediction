@@ -77,6 +77,9 @@ try:
     from modules.career import analyze_career, generate_career_report, get_planet_positions as get_career_planet_positions
     print("✅ Career module imported")
     
+    from modules.allyogas import detect_yogas, get_yogas_planet_positions
+    print("✅ Yogas module imported")
+    
     MODULES_AVAILABLE = True
     print("✅ Astrology modules loaded successfully")
 except ImportError as e:
@@ -334,9 +337,8 @@ def placeholder_dasa():
         logger.error(f"Error in dasa endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-# TEMPORARILY COMMENTED OUT
-# @app.get("/yogas")
-# def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+@app.get("/yogas")
+def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Yogas endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
