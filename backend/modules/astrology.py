@@ -208,15 +208,13 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     planetary_positions['Ketu'] = ketu_info
     
     # Ascendant and House Cusps - Use Equal House system for Vedic astrology
-    # Also ensure we're using sidereal calculations for houses
     cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'E', flags)  # Equal houses for Vedic
     ascendant_longitude = ascmc[0]
     
-    # Apply sidereal correction to Ascendant if needed
-    ayanamsa = swe.get_ayanamsa_ut(jd)
-    sidereal_ascendant = (ascendant_longitude - ayanamsa) % 360.0
+    # Debug Ascendant calculation
+    print(f"🏠 Ascendant debug - Raw: {ascendant_longitude:.2f}°, JD: {jd:.6f}")
     
-    planetary_positions['Ascendant'] = get_chart_info(sidereal_ascendant)
+    planetary_positions['Ascendant'] = get_chart_info(ascendant_longitude)
     
     print("✅ Planetary calculations complete using working repository method")
     
