@@ -123,7 +123,7 @@ def get_timezone_from_coordinates(lat, lon):
         }
         return timezone_map.get(hours_from_utc, 'UTC')
 
-def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude, longitude, timezone_name=None):
+def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude, longitude, timezone_name=None, tz_offset=5.5):
     """
     Calculate planetary positions using global timezone detection
     Exact implementation from working AstrologyResearchDatabase
@@ -149,18 +149,18 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     # Create local datetime
     local_dt = datetime.datetime.combine(date_obj, time_obj)
     
-    # Timezone handling
+    # Use provided timezone offset for consistency with reference calculations
+    # This ensures we match the expected Julian Day calculation
     if timezone_name:
         tz = pytz.timezone(timezone_name)
+        local_dt_tz = tz.localize(local_dt)
+        utc_dt = local_dt_tz.astimezone(pytz.UTC)
+        print(f"🔍 UTC: {utc_dt} (specified timezone: {timezone_name})")
     else:
-        # Auto-detect timezone from coordinates
-        timezone_name = get_timezone_from_coordinates(latitude, longitude)
-        tz = pytz.timezone(timezone_name)
-    
-    # Convert to UTC
-    local_dt_tz = tz.localize(local_dt)
-    utc_dt = local_dt_tz.astimezone(pytz.UTC)
-    print(f"🔍 UTC: {utc_dt} ({timezone_name})")
+        # Use provided timezone offset for precise calculation matching
+        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
+        utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
+        print(f"🔍 UTC: {utc_dt} (using offset +{tz_offset})")
     
     # Calculate Julian Day
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, 
@@ -237,13 +237,14 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     longitude = float(lon)
     
     try:
-        # Use the proven working repository method
+        # Use the proven working repository method with provided timezone offset
         positions, ascendant, cusps = calculate_planetary_positions_global(
             date_of_birth=dob,
             time_of_birth=tob, 
             latitude=latitude,
             longitude=longitude,
-            timezone_name=None  # Auto-detect
+            timezone_name=None,  # Use offset instead of auto-detect
+            tz_offset=tz_offset  # Pass the provided timezone offset
         )
         
         # Verify Moon calculation
