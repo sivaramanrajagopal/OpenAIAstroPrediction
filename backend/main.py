@@ -69,25 +69,11 @@ logger = logging.getLogger(__name__)
 
 # Try to import modules with fallback - isolate problematic imports
 try:
+    # SIMPLIFIED IMPORTS - ONLY WHAT'S NEEDED FOR PREDICT ENDPOINT
     from modules.astrology import get_planet_positions, generate_gpt_prompt, get_astrology_interpretation
     print("✅ Astrology module imported")
-    from modules.career import analyze_career, generate_career_report, get_planet_positions as get_career_planet_positions
-    print("✅ Career module imported")
-    from modules.allyogas import detect_yogas, get_yogas_planet_positions
-    print("✅ All yogas module imported")
-    # Temporarily comment out dasa imports to isolate the issue
-    # from modules.dasa import generate_dasa_table
-    # print("✅ Dasa module imported")
-    from modules.life_purpose import analyze_life_purpose, generate_purpose_report, ask_gpt, get_planet_positions as get_life_purpose_planet_positions
-    print("✅ Life purpose module imported")
-    # from modules.dasa_bhukti import get_planet_positions as get_dasa_bhukti_planet_positions, generate_dasa_table as generate_dasa_bhukti_table, ask_gpt_dasa_prediction
-    # print("✅ Dasa bhukti module imported")
-    from modules.spouse_analysis import get_planet_positions as get_spouse_planet_positions, get_aspects, analyze_marriage, generate_report, ask_gpt_spouse
-    print("✅ Spouse analysis module imported")
-    from modules.indu_dasa import get_indu_dasa
-    print("✅ Indu dasa module imported")
     MODULES_AVAILABLE = True
-    print("✅ All astrology modules loaded successfully")
+    print("✅ Core astrology module loaded successfully")
 except ImportError as e:
     MODULES_AVAILABLE = False
     print(f"⚠️  Astrology modules not available: {e}")
@@ -271,52 +257,23 @@ def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.error(f"Error in predict endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/career")
-def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
-    try:
-        logger.info(f"Career endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, gender={gender}")
-        
-        # Try real calculations first
-        if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
-            try:
-                local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
-                utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-                jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
-                
-                data, asc_deg, cusps = get_career_planet_positions(jd, lat, lon)
-                analysis = analyze_career(data, asc_deg, cusps, gender)
-                report = generate_career_report(analysis, asc_deg)
-                # Return format matching original code  
-                return {"career_report": report}
-            except Exception as e:
-                logger.warning(f"Career analysis calculation failed: {str(e)}")
-        
-        # Fallback career analysis
-        birth_year = int(dob.split('-')[0])
-        current_year = datetime.datetime.now().year
-        age = current_year - birth_year
-        
-        career_analysis = {
-            "10th_house": "Capricorn",
-            "10th_lord": "Saturn",
-            "career_planets": ["Sun", "Mercury", "Saturn"],
-            "recommended_fields": ["Technology", "Communication", "Management", "Finance"]
-        }
-        
-        report = f"🎯 Career Analysis for {gender} born {dob}\n\n" \
-                f"Your 10th house of career is in {career_analysis['10th_house']}, ruled by {career_analysis['10th_lord']}. " \
-                f"This indicates strong potential in structured, analytical fields. Current age {age} shows " \
-                f"favorable periods for career advancement. Recommended fields include technology, communication, " \
-                f"and leadership roles. Best career growth periods: ages 28-35 and 42-49."
-        
-        return {"career_report": report}
-        
-    except Exception as e:
-        logger.error(f"Error in career endpoint: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
+# TEMPORARILY COMMENTED OUT - FOCUSING ON PREDICT ENDPOINT ONLY
+# @app.get("/career")
+# def career(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
+#     try:
+#         logger.info(f"Career endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, gender={gender}")
+#         # ... career logic commented out for now
+#         return {"career_report": "Career analysis temporarily disabled"}
+#     except Exception as e:
+#         logger.error(f"Error in career endpoint: {str(e)}")
+#         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/dasa")
-def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+# TEMPORARILY COMMENTED OUT - ALL ENDPOINTS EXCEPT PREDICT
+# @app.get("/dasa")
+# def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+#     return {"message": "Endpoint temporarily disabled for debugging"}
+
+def placeholder_dasa():
     try:
         logger.info(f"Dasa endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -357,8 +314,9 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.error(f"Error in dasa endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/yogas")
-def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+# TEMPORARILY COMMENTED OUT
+# @app.get("/yogas")
+# def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Yogas endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -389,8 +347,9 @@ def yogas(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         logger.error(f"Error in yogas endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/life_purpose")
-def life_purpose(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+# TEMPORARILY COMMENTED OUT
+# @app.get("/life_purpose")
+# def life_purpose(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Life purpose endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -446,8 +405,9 @@ Provide deep insights on soul purpose, karmic lessons, and spiritual path."""
         logger.error(f"Error in life_purpose endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/dasa_bhukti")
-def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+# TEMPORARILY COMMENTED OUT
+# @app.get("/dasa_bhukti")
+# def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Dasa bhukti endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
@@ -560,8 +520,9 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
         logger.error(f"Error in dasa_bhukti endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/spouse")
-def spouse(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
+# TEMPORARILY COMMENTED OUT
+# @app.get("/spouse")
+# def spouse(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5, gender: str = "Male"):
     try:
         logger.info(f"Spouse endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, gender={gender}")
         
@@ -631,8 +592,9 @@ Provide insights on spouse characteristics, marriage timing, relationship compat
         logger.error(f"Error in spouse endpoint: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
-@app.get("/indu_dasa")
-def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
+# TEMPORARILY COMMENTED OUT
+# @app.get("/indu_dasa")
+# def indu_dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Indu dasa endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         

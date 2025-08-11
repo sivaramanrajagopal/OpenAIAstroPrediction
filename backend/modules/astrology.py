@@ -128,7 +128,10 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     Calculate planetary positions using global timezone detection
     Exact implementation from working AstrologyResearchDatabase
     """
-    print(f"🔍 WORKING REPO CALCULATION: {date_of_birth} {time_of_birth} at {latitude}, {longitude}")
+    print(f"🔍 Calculating: {date_of_birth} {time_of_birth} at {latitude}, {longitude}")
+    
+    # Ensure proper sidereal setup
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
     
     # Parse date and time
     if isinstance(date_of_birth, str):
@@ -145,7 +148,6 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     
     # Create local datetime
     local_dt = datetime.datetime.combine(date_obj, time_obj)
-    print(f"🔍 Local datetime: {local_dt}")
     
     # Timezone handling
     if timezone_name:
@@ -158,15 +160,18 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     # Convert to UTC
     local_dt_tz = tz.localize(local_dt)
     utc_dt = local_dt_tz.astimezone(pytz.UTC)
-    print(f"🔍 UTC datetime: {utc_dt} (timezone: {timezone_name})")
+    print(f"🔍 UTC: {utc_dt} ({timezone_name})")
     
     # Calculate Julian Day
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, 
                     utc_dt.hour + utc_dt.minute / 60.0)
-    print(f"🔍 Julian Day: {jd:.10f}")
     
     # Set topocentric coordinates (essential for accuracy)
     swe.set_topo(longitude, latitude, 0)
+    
+    # Verify ayanamsa - critical for accuracy
+    ayanamsa_value = swe.get_ayanamsa_ut(jd)
+    print(f"🔍 JD: {jd:.6f}, Ayanamsa: {ayanamsa_value:.4f}°")
     
     # Calculation flags
     flags = swe.FLG_SIDEREAL | swe.FLG_SPEED
@@ -183,11 +188,10 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
         
         planetary_positions[planet_name] = get_chart_info(longitude, speed)
         
-        # Special logging for Moon
+        # Key Moon values for verification
         if planet_name == "Moon":
-            print(f"🌙 MOON PRECISE - Longitude: {longitude:.10f}°")
-            print(f"🌙 MOON PRECISE - Pada: {planetary_positions[planet_name]['pada']}")
-            print(f"🌙 MOON PRECISE - Nakshatra: {planetary_positions[planet_name]['nakshatra']}")
+            pada = planetary_positions[planet_name]['pada']
+            print(f"🌙 Moon: {longitude:.4f}°, Pada {pada} - Expected: ~354.14°, Pada 3")
     
     # Rahu (True Node)
     rahu_result = swe.calc_ut(jd, swe.TRUE_NODE, flags)
@@ -213,19 +217,14 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
 # Wrapper function to match current API signature
 def get_planet_positions(dob, tob, lat, lon, tz_offset):
     """
-    Wrapper function to maintain compatibility with current API
+    Calculate planetary positions using working repository method
+    Focuses on correct sidereal calculations
     """
-    print("🚀🚀🚀 ASTROLOGY.PY - WORKING REPOSITORY calculation method - MOON SHOULD BE 354.14° 🚀🚀🚀")
-    print("🔥🔥🔥 THIS IS THE CORRECT FUNCTION FROM astrology.py - NOT A CONFLICT! 🔥🔥🔥")
-    print(f"🔍 FUNCTION DEBUG: Called with dob={dob}, tob={tob}, lat={lat}, lon={lon}, tz_offset={tz_offset}")
-    print(f"🔍 FUNCTION LOCATION: {__file__}")
+    print(f"🔍 ASTROLOGY CALCULATION: {dob} {tob} at {lat}, {lon}")
     
-    # TEST: Let's see what our local working implementation returns
-    import os
-    if os.environ.get('RAILWAY_ENVIRONMENT'):
-        print("🚂 RUNNING ON RAILWAY - Testing working implementation")
-    else:
-        print("💻 RUNNING LOCALLY")
+    # Ensure Swiss Ephemeris is properly configured
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    print("🔍 Sidereal mode: LAHIRI confirmed")
     
     # Convert parameters to appropriate types
     latitude = float(lat)
@@ -241,20 +240,13 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
             timezone_name=None  # Auto-detect
         )
         
-        # Debug: Check what we actually calculated
+        # Verify Moon calculation
         if 'Moon' in positions:
-            moon_data = positions['Moon']
-            print(f"🔍 CALCULATED MOON - Longitude: {moon_data.get('longitude', 'missing'):.10f}°")
-            print(f"🔍 CALCULATED MOON - Pada: {moon_data.get('pada', 'missing')}")
-            print(f"🔍 CALCULATED MOON - Nakshatra: {moon_data.get('nakshatra', 'missing')}")
-            print(f"🔍 CALCULATED MOON - Rasi: {moon_data.get('rasi', 'missing')}")
-            
-            if abs(moon_data.get('longitude', 0) - 354.14) < 0.1:
-                print("✅ MOON CALCULATION IS CORRECT!")
-            else:
-                print(f"❌ MOON CALCULATION IS WRONG! Expected ~354.14°, got {moon_data.get('longitude', 0):.2f}°")
-        else:
-            print("🚨 NO MOON DATA IN RESULT!")
+            moon_lng = positions['Moon'].get('longitude', 0)
+            moon_pada = positions['Moon'].get('pada', 0)
+            is_correct = abs(moon_lng - 354.14) < 0.1 and moon_pada == 3
+            status = "✅ CORRECT" if is_correct else "❌ INCORRECT"
+            print(f"🌙 Result: {moon_lng:.2f}° Pada {moon_pada} - {status}")
         
         return positions, ascendant, cusps
         
