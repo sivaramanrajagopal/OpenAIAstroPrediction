@@ -36,7 +36,7 @@ def get_chart_info(longitude, speed=None):
         'pada': int(((longitude % (360 / 27)) / (360 / 27 / 4)) + 1)
     }
 
-def get_planet_positions(dob, tob, lat, lon, tz_offset):
+def get_yogas_planet_positions(dob, tob, lat, lon, tz_offset):
     local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
     utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
