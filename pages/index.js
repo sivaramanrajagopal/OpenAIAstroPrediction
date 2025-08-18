@@ -401,10 +401,10 @@ export default function Home() {
           calculation_method: chartRes.calculation_method
         });
         
-        setCareer(careerRes.report || "Career analysis in progress..."); // Backend returns 'report'
+        setCareer(careerRes.career_report || "Career analysis in progress..."); // Backend returns 'career_report'
         setDasa(dasaRes.dasa_timeline?.[0] || []); // Backend returns 'dasa_timeline' with array at index 0
         setYogas(yogasRes.yogas || []);
-        setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress..."); // Backend returns 'report'
+        setLifePurpose(lifePurposeRes.interpretation || "Life purpose analysis in progress..."); // Backend returns 'interpretation'
         setDasaBhukti(dasaBhuktiRes.table || []); // Backend returns 'table'
         setSpouseAnalysis({
           ...spouseRes.spouse_analysis,
