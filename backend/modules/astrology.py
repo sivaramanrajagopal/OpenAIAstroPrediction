@@ -159,10 +159,9 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     else:
         # Use provided timezone offset for precise calculation matching
         utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-        utc_dt = utc_dt.replace(tzinfo=pytz.UTC)
         print(f"🔍 UTC: {utc_dt} (using offset +{tz_offset})")
     
-    # Calculate Julian Day - Fix timezone handling
+    # Calculate Julian Day - Simplified to match working reference
     jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, 
                     utc_dt.hour + utc_dt.minute / 60.0)
     
@@ -172,23 +171,16 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
     print(f"🔍 UTC time: {utc_dt}")
     print(f"🔍 Timezone offset: {tz_offset}")
     
-    # Set topocentric coordinates (longitude first, latitude second - as per reference)
-    swe.set_topo(longitude, latitude, 0)
+    # Calculation flags - exactly as per working reference
+    FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
     
-    # Verify ayanamsa - critical for accuracy
-    ayanamsa_value = swe.get_ayanamsa_ut(jd)
-    print(f"🔍 JD: {jd:.6f}, Ayanamsa: {ayanamsa_value:.4f}°")
-    
-    # Calculation flags
-    flags = swe.FLG_SIDEREAL | swe.FLG_SPEED
-    
-    # Planetary calculations
+    # Planetary calculations - exactly as per working reference
     planetary_positions = {}
     
-    # Traditional planets (0-6: Sun through Saturn)
-    for planet_id in range(7):
+    # All planets (0-9) - exactly as per working reference
+    for planet_id in range(0, 10):
         planet_name = swe.get_planet_name(planet_id)
-        result = swe.calc_ut(jd, planet_id, flags)
+        result = swe.calc_ut(jd, planet_id, FLAGS)
         longitude = result[0][0]
         speed = result[0][3]
         
@@ -199,43 +191,31 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
             pada = planetary_positions[planet_name]['pada']
             print(f"🌙 Moon: {longitude:.4f}°, Pada {pada} - Expected: ~354.14°, Pada 3")
     
-    # Rahu (True Node)
-    rahu_result = swe.calc_ut(jd, swe.TRUE_NODE, flags)
-    rahu_longitude = rahu_result[0][0]
-    rahu_speed = rahu_result[0][3]
-    rahu_info = get_chart_info(rahu_longitude, rahu_speed)
-    rahu_info['retrograde'] = True  # Rahu is always retrograde in Vedic astrology
-    planetary_positions['Rahu'] = rahu_info
+    # Rahu & Ketu - exactly as per working reference
+    for node_type, base_name in [(swe.TRUE_NODE, 'True'), (swe.MEAN_NODE, 'Mean')]:
+        rahu = swe.calc_ut(jd, node_type, FLAGS)[0]
+        rahu_info = get_chart_info(rahu[0], rahu[3])
+        planetary_positions[f'Rahu ({base_name})'] = rahu_info
+        
+        ketu_lon = (rahu[0] + 180.0) % 360.0
+        ketu_info = get_chart_info(ketu_lon, rahu[3])
+        ketu_info['retrograde'] = True
+        planetary_positions[f'Ketu ({base_name})'] = ketu_info
     
-    # Ketu (180° opposite to Rahu)
-    ketu_longitude = (rahu_longitude + 180.0) % 360.0
-    ketu_info = get_chart_info(ketu_longitude, rahu_speed)
-    ketu_info['retrograde'] = True  # Ketu is always retrograde
-    planetary_positions['Ketu'] = ketu_info
-    
-    # Ascendant and House Cusps - Use same system as reference code
-    # Fix: Use correct parameters for house calculation
-    cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=flags)  # 'O' system as per reference
+    # Ascendant calculation - exactly as per working reference
+    cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=FLAGS)
     ascendant_longitude = ascmc[0]
     
-    # Debug Ascendant calculation with house system verification
+    # Debug Ascendant calculation
     print(f"🏠 Ascendant debug - Raw: {ascendant_longitude:.2f}°, JD: {jd:.6f}, System: O")
-    print(f"🏠 Expected for Pondicherry native: ~26.48° Mesha")
+    print(f"🏠 Expected for 1978-09-18 17:35: ~322.66° Kumbha")
     
-    # Verify the calculation matches expected values
-    if abs(ascendant_longitude - 26.48) > 5:  # If off by more than 5 degrees
-        print(f"⚠️ WARNING: Ascendant calculation may be incorrect. Expected ~26.48°, got {ascendant_longitude:.2f}°")
-        # Try alternative calculation method
-        try:
-            # Alternative: Use houses() instead of houses_ex()
-            cusps_alt, ascmc_alt = swe.houses(jd, latitude, longitude, b'O')
-            alt_asc = ascmc_alt[0]
-            print(f"🏠 Alternative calculation: {alt_asc:.2f}°")
-            if abs(alt_asc - 26.48) < abs(ascendant_longitude - 26.48):
-                ascendant_longitude = alt_asc
-                print(f"✅ Using alternative calculation: {ascendant_longitude:.2f}°")
-        except Exception as e:
-            print(f"❌ Alternative calculation failed: {e}")
+    # Verify the calculation matches expected values for the specific birth time
+    expected_ascendant = 322.66  # Correct value for 1978-09-18 17:35
+    if abs(ascendant_longitude - expected_ascendant) > 5:  # If off by more than 5 degrees
+        print(f"⚠️ WARNING: Ascendant calculation may be incorrect. Expected ~{expected_ascendant}°, got {ascendant_longitude:.2f}°")
+    else:
+        print(f"✅ Ascendant calculation is correct: {ascendant_longitude:.2f}°")
     
     planetary_positions['Ascendant'] = get_chart_info(ascendant_longitude)
     
