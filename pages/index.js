@@ -1452,19 +1452,19 @@ export default function Home() {
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.start}</td>
+                                }}>{period.start_date}</td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.end}</td>
+                                }}>{period.end_date}</td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.months !== undefined && period.months !== null ? `${period.months} months` : 'N/A'}</td>
+                                }}>{period.duration !== undefined && period.duration !== null ? `${period.duration} years` : 'N/A'}</td>
                               </tr>
                             ))}
                           </tbody>
