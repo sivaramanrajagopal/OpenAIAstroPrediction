@@ -37,8 +37,15 @@ def setup_swiss_ephemeris():
     swe.set_sid_mode(swe.SIDM_LAHIRI)
     print("✅ Sidereal mode set to LAHIRI")
 
-# Initialize on import
-setup_swiss_ephemeris()
+# Initialize on import - but only if not already set up
+try:
+    # Check if ephemeris is already set up by main.py
+    test_jd = swe.julday(2000, 1, 1, 12.0)
+    test_calc = swe.calc_ut(test_jd, swe.SUN, swe.FLG_SIDEREAL)
+    print("✅ Swiss Ephemeris already configured by main.py")
+except:
+    # Only set up if not already configured
+    setup_swiss_ephemeris()
 
 # Vedic Astrology Constants
 NAKSHATRAS = [
@@ -125,103 +132,70 @@ def get_timezone_from_coordinates(lat, lon):
 
 def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude, longitude, timezone_name=None, tz_offset=5.5):
     """
-    Calculate planetary positions using global timezone detection
-    Exact implementation from working AstrologyResearchDatabase
+    Calculate planetary positions using EXACT working reference code
     """
     print(f"🔍 Calculating: {date_of_birth} {time_of_birth} at {latitude}, {longitude}")
     
-    # Ensure proper sidereal setup
-    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    # Parse date and time - exactly as working reference
+    local_dt = datetime.datetime.strptime(f"{date_of_birth} {time_of_birth}", "%Y-%m-%d %H:%M")
+    utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
     
-    # Parse date and time
-    if isinstance(date_of_birth, str):
-        date_parts = date_of_birth.split('-')
-        date_obj = datetime.date(int(date_parts[0]), int(date_parts[1]), int(date_parts[2]))
-    else:
-        date_obj = date_of_birth
-        
-    if isinstance(time_of_birth, str):
-        time_parts = time_of_birth.split(':')
-        time_obj = datetime.time(int(time_parts[0]), int(time_parts[1]))
-    else:
-        time_obj = time_of_birth
+    print(f"🔍 UTC: {utc_dt} (using offset +{tz_offset})")
     
-    # Create local datetime
-    local_dt = datetime.datetime.combine(date_obj, time_obj)
-    
-    # Use provided timezone offset for consistency with reference calculations
-    # This ensures we match the expected Julian Day calculation
-    if timezone_name:
-        tz = pytz.timezone(timezone_name)
-        local_dt_tz = tz.localize(local_dt)
-        utc_dt = local_dt_tz.astimezone(pytz.UTC)
-        print(f"🔍 UTC: {utc_dt} (specified timezone: {timezone_name})")
-    else:
-        # Use provided timezone offset for precise calculation matching
-        utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
-        print(f"🔍 UTC: {utc_dt} (using offset +{tz_offset})")
-    
-    # Calculate Julian Day - Simplified to match working reference
-    jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, 
+    # Calculate Julian Day - exactly as working reference
+    jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day,
                     utc_dt.hour + utc_dt.minute / 60.0)
     
-    # Debug Julian Day calculation
     print(f"🔍 Julian Day: {jd:.6f}")
     print(f"🔍 Local time: {local_dt}")
     print(f"🔍 UTC time: {utc_dt}")
     print(f"🔍 Timezone offset: {tz_offset}")
     
-    # Calculation flags - exactly as per working reference
+    # Calculation flags - exactly as working reference
     FLAGS = swe.FLG_SIDEREAL | swe.FLG_SPEED
+    results = {}
     
-    # Planetary calculations - exactly as per working reference
-    planetary_positions = {}
-    
-    # All planets (0-9) - exactly as per working reference
+    # All planets (0-9) - exactly as working reference
     for planet_id in range(0, 10):
         planet_name = swe.get_planet_name(planet_id)
-        result = swe.calc_ut(jd, planet_id, FLAGS)
-        longitude = result[0][0]
-        speed = result[0][3]
-        
-        planetary_positions[planet_name] = get_chart_info(longitude, speed)
+        lonlat = swe.calc_ut(jd, planet_id, FLAGS)[0]
+        results[planet_name] = get_chart_info(lonlat[0], lonlat[3])
         
         # Key Moon values for verification
         if planet_name == "Moon":
-            pada = planetary_positions[planet_name]['pada']
-            print(f"🌙 Moon: {longitude:.4f}°, Pada {pada} - Expected: ~354.14°, Pada 3")
+            pada = results[planet_name]['pada']
+            print(f"🌙 Moon: {lonlat[0]:.4f}°, Pada {pada} - Expected: ~354.14°, Pada 3")
     
-    # Rahu & Ketu - exactly as per working reference
+    # Rahu & Ketu - exactly as working reference
     for node_type, base_name in [(swe.TRUE_NODE, 'True'), (swe.MEAN_NODE, 'Mean')]:
         rahu = swe.calc_ut(jd, node_type, FLAGS)[0]
         rahu_info = get_chart_info(rahu[0], rahu[3])
-        planetary_positions[f'Rahu ({base_name})'] = rahu_info
+        results[f'Rahu ({base_name})'] = rahu_info
         
         ketu_lon = (rahu[0] + 180.0) % 360.0
         ketu_info = get_chart_info(ketu_lon, rahu[3])
         ketu_info['retrograde'] = True
-        planetary_positions[f'Ketu ({base_name})'] = ketu_info
+        results[f'Ketu ({base_name})'] = ketu_info
     
-    # Ascendant calculation - exactly as per working reference
+    # Ascendant calculation - exactly as working reference
     cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=FLAGS)
     ascendant_longitude = ascmc[0]
     
-    # Debug Ascendant calculation
     print(f"🏠 Ascendant debug - Raw: {ascendant_longitude:.2f}°, JD: {jd:.6f}, System: O")
     print(f"🏠 Expected for 1978-09-18 17:35: ~322.66° Kumbha")
     
-    # Verify the calculation matches expected values for the specific birth time
-    expected_ascendant = 322.66  # Correct value for 1978-09-18 17:35
-    if abs(ascendant_longitude - expected_ascendant) > 5:  # If off by more than 5 degrees
+    # Verify the calculation
+    expected_ascendant = 322.66
+    if abs(ascendant_longitude - expected_ascendant) > 5:
         print(f"⚠️ WARNING: Ascendant calculation may be incorrect. Expected ~{expected_ascendant}°, got {ascendant_longitude:.2f}°")
     else:
         print(f"✅ Ascendant calculation is correct: {ascendant_longitude:.2f}°")
     
-    planetary_positions['Ascendant'] = get_chart_info(ascendant_longitude)
+    results['Ascendant'] = get_chart_info(ascendant_longitude)
     
     print("✅ Planetary calculations complete using working repository method")
     
-    return planetary_positions, ascendant_longitude, cusps
+    return results, ascendant_longitude, cusps
 
 # Wrapper function to match current API signature
 def get_planet_positions(dob, tob, lat, lon, tz_offset):
@@ -241,6 +215,7 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
     
     try:
         # Use the proven working repository method with provided timezone offset
+        print(f"🔍 Calling calculate_planetary_positions_global...")
         positions, ascendant, cusps = calculate_planetary_positions_global(
             date_of_birth=dob,
             time_of_birth=tob, 
@@ -249,6 +224,8 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
             timezone_name=None,  # Use offset instead of auto-detect
             tz_offset=tz_offset  # Pass the provided timezone offset
         )
+        
+        print(f"🔍 calculate_planetary_positions_global returned ascendant: {ascendant:.2f}°")
         
         # Verify Moon calculation
         if 'Moon' in positions:
@@ -262,6 +239,8 @@ def get_planet_positions(dob, tob, lat, lon, tz_offset):
         
     except Exception as e:
         print(f"❌ Working repository calculation failed: {e}")
+        import traceback
+        print(f"❌ Full traceback: {traceback.format_exc()}")
         raise e
 
 # GPT Integration (keeping existing implementation)
