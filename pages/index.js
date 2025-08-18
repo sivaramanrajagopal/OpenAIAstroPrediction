@@ -401,10 +401,10 @@ export default function Home() {
           calculation_method: chartRes.calculation_method
         });
         
-        setCareer(careerRes.career_report || "Career analysis in progress..."); // Backend returns 'career_report'
+        setCareer(careerRes.report || "Career analysis in progress..."); // Backend returns 'report'
         setDasa(dasaRes.dasa_timeline?.[0] || []); // Backend returns 'dasa_timeline' with array at index 0
         setYogas(yogasRes.yogas || []);
-        setLifePurpose(lifePurposeRes.interpretation || "Life purpose analysis in progress..."); // Backend returns 'interpretation'
+        setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress..."); // Backend returns 'report'
         setDasaBhukti(dasaBhuktiRes.table || []); // Backend returns 'table'
         setSpouseAnalysis({
           ...spouseRes.spouse_analysis,
@@ -1282,7 +1282,7 @@ export default function Home() {
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.duration !== undefined && period.duration !== null ? period.duration : 'N/A'}</td>
+                                }}>{period.years !== undefined && period.years !== null ? period.years : 'N/A'}</td>
                               </tr>
                             ))}
                           </tbody>
@@ -1445,26 +1445,26 @@ export default function Home() {
                                   fontSize: '0.9rem',
                                   fontWeight: '600'
                                 }}>
-                                  {period.planet}
+                                  {period.maha_dasa} - {period.bhukti}
                                 </td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.start_date}</td>
+                                }}>{period.start}</td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.end_date}</td>
+                                }}>{period.end}</td>
                                 <td style={{
                                   padding: '12px 16px',
                                   borderBottom: '1px solid #f1f5f9',
                                   color: '#4b5563',
                                   fontSize: '0.9rem'
-                                }}>{period.duration !== undefined && period.duration !== null ? `${period.duration} years` : 'N/A'}</td>
+                                }}>{period.months !== undefined && period.months !== null ? `${period.months} months` : 'N/A'}</td>
                               </tr>
                             ))}
                           </tbody>
