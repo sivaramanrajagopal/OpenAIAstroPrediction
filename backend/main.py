@@ -89,8 +89,15 @@ try:
     from modules.indu_dasa import get_indu_dasa
     print("✅ Indu dasa module imported")
     
+    # ADDING MISSING MODULES
+    from modules.dasa import get_planet_positions as get_dasa_planet_positions, generate_dasa_table
+    print("✅ Dasa module imported")
+    
+    from modules.dasa_bhukti import get_planet_positions as get_dasa_bhukti_planet_positions, generate_dasa_bhukti_table
+    print("✅ Dasa Bhukti module imported")
+    
     MODULES_AVAILABLE = True
-    print("✅ Astrology modules loaded successfully")
+    print("✅ All astrology modules loaded successfully")
 except ImportError as e:
     MODULES_AVAILABLE = False
     print(f"⚠️  Astrology modules not available: {e}")
@@ -229,49 +236,33 @@ def root():
 @app.get("/predict")
 def predict(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
-        logger.info(f"🚀 DEBUGGING PREDICT CODE V2.4 - MOON PADA INVESTIGATION - dob={dob}, tob={tob}, lat={lat}, lon={lon}")
-        logger.info(f"🔍 MODULES_AVAILABLE: {MODULES_AVAILABLE}")
-        logger.info(f"🔍 SWISSEPH_AVAILABLE: {SWISSEPH_AVAILABLE}")
+        logger.info(f"Predict endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
-        # Use new Working Repository calculations
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
-            try:
-                logger.info("🔍 Attempting WORKING REPOSITORY calculation method...")
-                data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
-                logger.info("🔍 Working Repository calculation successful.")
-                
-                # DEBUG: Log Moon data specifically
-                if 'Moon' in data:
-                    moon = data['Moon']
-                    logger.info(f"🌙 MOON DEBUG - Longitude: {moon.get('longitude', 'missing'):.8f}°")
-                    logger.info(f"🌙 MOON DEBUG - Pada: {moon.get('pada', 'missing')}")
-                    logger.info(f"🌙 MOON DEBUG - Rasi: {moon.get('rasi', 'missing')}")
-                    logger.info(f"🌙 MOON DEBUG - Nakshatra: {moon.get('nakshatra', 'missing')}")
-                else:
-                    logger.error("🚨 NO MOON DATA FOUND IN RESULT!")
-                
-                prompt = generate_gpt_prompt(data)
-                interpretation = get_astrology_interpretation(prompt)
-                # Return exact format as original code
-                return {
-                    "chart": data,
-                    "interpretation": interpretation,
-                    "status": "success",
-                    "calculation_method": "working_repository_swiss_ephemeris"
-                }
-            except Exception as e:
-                logger.error(f"🚨 SWISS EPHEMERIS CALCULATION FAILED: {str(e)}")
-                logger.error(f"🚨 Error type: {type(e).__name__}")
-                import traceback
-                logger.error(f"🚨 Full traceback: {traceback.format_exc()}")
-                logger.error(f"🚨 FALLING BACK TO HARDCODED DATA!")
-        
-        # No more hardcoded fallback - force calculation error handling instead
-        logger.error("🚨 WORKING REPOSITORY CALCULATION FAILED - This should not happen!")
-        raise HTTPException(status_code=500, detail="Astrology calculation system failed - please try again")
+            data, asc_deg, cusps = get_planet_positions(dob, tob, lat, lon, tz_offset)
+            prompt = generate_gpt_prompt(data)
+            interpretation = get_astrology_interpretation(prompt)
+            
+            return {
+                "chart": data,
+                "interpretation": interpretation,
+                "status": "success",
+                "calculation_method": "swiss_ephemeris"
+            }
+        else:
+            # Fallback for when modules are not available
+            logger.warning("Using fallback calculation - modules not available")
+            return {
+                "chart": fallback_planet_positions(0, lat, lon),
+                "interpretation": "Astrological interpretation using fallback calculations",
+                "status": "success",
+                "calculation_method": "fallback_astronomical"
+            }
         
     except Exception as e:
         logger.error(f"Error in predict endpoint: {str(e)}")
+        import traceback
+        logger.error(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"Error processing request: {str(e)}")
 
 @app.get("/career")
@@ -305,21 +296,18 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
     try:
         logger.info(f"Dasa endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
-        # Try real calculations first
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
                 utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
                 jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
-                swe.set_topo(lon, lat, 0)
+                
+                data, asc_deg, cusps = get_dasa_planet_positions(jd, lat, lon)
                 moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
                 
-                # Temporarily disabled due to import issues
-                # nakshatra, pada, dasa_table = generate_dasa_table(jd, moon_longitude)
-                dasa_table = [{"planet": "Sun", "start_age": 0, "end_age": 6, "duration": 6}]
+                nakshatra, pada, dasa_table = generate_dasa_table(jd, moon_longitude)
                 
-                # Return format matching original code
-                return {"dasa_table": dasa_table}
+                return {"dasa_timeline": [dasa_table]}
             except Exception as e:
                 logger.warning(f"Dasa calculation failed: {str(e)}")
         
@@ -336,7 +324,7 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
             {"planet": "Jupiter", "start_age": age+41, "end_age": age+57, "duration": 16}
         ]
         
-        return {"dasa_table": dasa_timeline}
+        return {"dasa_timeline": [dasa_timeline]}
         
     except Exception as e:
         logger.error(f"Error in dasa endpoint: {str(e)}")
@@ -436,82 +424,22 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
     try:
         logger.info(f"Dasa bhukti endpoint called with dob={dob}, tob={tob}, lat={lat}, lon={lon}")
         
-        # Try real calculations first
         if MODULES_AVAILABLE and SWISSEPH_AVAILABLE:
             try:
                 local_dt = datetime.datetime.strptime(f"{dob} {tob}", "%Y-%m-%d %H:%M")
                 utc_dt = local_dt - datetime.timedelta(hours=tz_offset)
                 jd = swe.julday(utc_dt.year, utc_dt.month, utc_dt.day, utc_dt.hour + utc_dt.minute / 60.0)
                 
-                # Temporarily disabled due to import issues
-                # data, asc_deg, cusps = get_dasa_bhukti_planet_positions(jd, lat, lon)
+                data, asc_deg, cusps = get_dasa_bhukti_planet_positions(jd, lat, lon)
                 moon_longitude = swe.calc_ut(jd, swe.MOON, swe.FLG_SIDEREAL)[0][0]
                 
-                # Generate dasa table and then calculate bhukti periods  
-                # dasa_table = generate_dasa_bhukti_table(jd, moon_longitude)
-                data = {}
-                dasa_table = []
+                bhukti_table = generate_dasa_bhukti_table(jd, moon_longitude)
                 
-                # Generate bhukti periods based on original expected format
-                # This shows the complete Vimshottari Dasa sequence with proper durations
-                from collections import OrderedDict
-                
-                # Vimshottari Dasa durations in years (matching your expected output)
-                bhukti_durations = OrderedDict([
-                    ("Moon", 10), ("Mars", 7), ("Rahu", 18), ("Jupiter", 16), 
-                    ("Saturn", 19), ("Mercury", 17), ("Ketu", 7), ("Venus", 20), ("Sun", 6)
-                ])
-                
-                # Calculate starting point based on Moon's nakshatra 
-                nakshatra_index = int((moon_longitude % 360) // (360 / 27))
-                nakshatra_lord = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"][nakshatra_index % 9]
-                
-                # Calculate remaining time in current dasa
-                nakshatra_length = 360 / 27
-                remainder = moon_longitude % nakshatra_length
-                portion_completed = remainder / nakshatra_length
-                current_dasa_duration = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7, "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17}[nakshatra_lord]
-                remaining_years = current_dasa_duration * (1 - portion_completed)
-                
-                # Create bhukti table starting from current lord
-                bhukti_table = []
-                dasa_order = ["Ketu", "Venus", "Sun", "Moon", "Mars", "Rahu", "Jupiter", "Saturn", "Mercury"]
-                current_index = dasa_order.index(nakshatra_lord)
-                
-                # First entry shows remaining time in current dasa
-                bhukti_table.append({
-                    "planet": nakshatra_lord,
-                    "duration": round(remaining_years, 2),
-                    "units": f"{round(remaining_years, 2)} units"
-                })
-                
-                # Add remaining dasa periods in sequence
-                for i in range(1, len(dasa_order)):
-                    planet = dasa_order[(current_index + i) % len(dasa_order)]
-                    duration = {"Ketu": 7, "Venus": 20, "Sun": 6, "Moon": 10, "Mars": 7, "Rahu": 18, "Jupiter": 16, "Saturn": 19, "Mercury": 17}[planet]
-                    bhukti_table.append({
-                        "planet": planet,
-                        "duration": duration,
-                        "units": f"{duration} units"
-                    })
-                
-                # Add final partial period to complete cycle
-                bhukti_table.append({
-                    "planet": nakshatra_lord,
-                    "duration": round(current_dasa_duration - remaining_years, 2),
-                    "units": f"{round(current_dasa_duration - remaining_years, 2)} units"
-                })
-                
-                # Generate GPT analysis - temporarily disabled
-                birth_info = {"dob": dob, "tob": tob, "place": f"lat:{lat}, lon:{lon}"}
-                gpt_analysis = f"Dasa analysis temporarily unavailable due to system maintenance"
-                
-                # Return format matching original code
                 return {
                     "birth_info": {"dob": dob, "tob": tob, "place": f"Lat: {lat}, Lon: {lon}"},
                     "planetary_positions": data,
-                    "dasa_table": bhukti_table,
-                    "gpt_prediction": gpt_analysis
+                    "table": bhukti_table,
+                    "gpt_prediction": f"Dasa bhukti analysis for {dob} at {tob}"
                 }
             except Exception as e:
                 logger.warning(f"Dasa Bhukti calculation failed: {str(e)}")
@@ -527,17 +455,10 @@ def dasa_bhukti(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5
             {"maha_dasa": "Moon", "bhukti": "Moon", "start_date": "2026-01-01", "end_date": "2026-11-01", "duration": 10}
         ]
         
-        analysis = {
-            "current_maha_dasa": "Sun",
-            "current_bhukti": "Moon",
-            "favorable_periods": ["Sun-Jupiter", "Moon-Venus", "Jupiter-Mercury"],
-            "challenging_periods": ["Saturn-Mars", "Rahu-Saturn"]
-        }
-        
         return {
             "birth_info": {"dob": dob, "tob": tob, "place": f"Lat: {lat}, Lon: {lon}"},
             "planetary_positions": {},
-            "dasa_table": bhukti_table,
+            "table": bhukti_table,
             "gpt_prediction": f"Dasa bhukti analysis for {dob} at {tob}"
         }
         

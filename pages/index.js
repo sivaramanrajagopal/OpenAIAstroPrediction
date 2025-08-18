@@ -401,14 +401,15 @@ export default function Home() {
           calculation_method: chartRes.calculation_method
         });
         
-        setCareer(careerRes.report || "Career analysis in progress..."); // Backend returns 'report'
-        setDasa(dasaRes.dasa_timeline?.[2] || []); // Backend returns 'dasa_timeline' with array at index 2
+        setCareer(careerRes.career_report || "Career analysis in progress..."); // Backend returns 'career_report'
+        setDasa(dasaRes.dasa_timeline?.[0] || []); // Backend returns 'dasa_timeline' with array at index 0
         setYogas(yogasRes.yogas || []);
-        setLifePurpose(lifePurposeRes.report || "Life purpose analysis in progress..."); // Backend returns 'report'
+        setLifePurpose(lifePurposeRes.interpretation || "Life purpose analysis in progress..."); // Backend returns 'interpretation'
         setDasaBhukti(dasaBhuktiRes.table || []); // Backend returns 'table'
         setSpouseAnalysis({
           ...spouseRes.spouse_analysis,
-          report: spouseRes.report
+          report: spouseRes.report,
+          interpretation: spouseRes.interpretation
         } || { gender: "Processing...", lagna: "Processing..." });
         setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
         
@@ -1519,6 +1520,22 @@ export default function Home() {
                               whiteSpace: 'pre-line'
                             }}>
                               {formatText(spouseAnalysis.report)}
+                            </div>
+                          )}
+                          {spouseAnalysis.interpretation && (
+                            <div style={{
+                              color: '#374151',
+                              lineHeight: '1.6',
+                              fontSize: '1rem',
+                              margin: '20px 0 0 0',
+                              whiteSpace: 'pre-line',
+                              padding: '16px',
+                              background: '#f8fafc',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0'
+                            }}>
+                              <h4 style={{color: '#2563eb', marginBottom: '12px'}}>AI Analysis:</h4>
+                              {formatText(spouseAnalysis.interpretation)}
                             </div>
                           )}
                         </div>

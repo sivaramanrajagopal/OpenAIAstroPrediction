@@ -138,6 +138,53 @@ def generate_dasa_table(jd, moon_longitude, total_years=120):
 
     return dasa_table
 
+def generate_dasa_bhukti_table(jd, moon_longitude):
+    """Generate Dasa Bhukti table with sub-periods."""
+    # First get the main dasa periods
+    main_dasa_table = generate_dasa_table(jd, moon_longitude, total_years=120)
+    
+    # For each main dasa, calculate bhukti (sub-periods)
+    bhukti_table = []
+    
+    for main_period in main_dasa_table[:5]:  # Show first 5 main periods
+        maha_dasa_planet = main_period['planet']
+        maha_dasa_duration = main_period['duration']
+        
+        # Calculate bhukti periods within this maha dasa
+        bhukti_durations = dasa_durations.copy()
+        current_bhukti_index = list(bhukti_durations.keys()).index(maha_dasa_planet)
+        
+        current_date = datetime.datetime.strptime(main_period['start_date'], "%Y-%m-%d")
+        remaining_duration = maha_dasa_duration
+        
+        for i in range(len(bhukti_durations)):
+            bhukti_planet = list(bhukti_durations.keys())[(current_bhukti_index + i) % len(bhukti_durations)]
+            bhukti_duration = bhukti_durations[bhukti_planet]
+            
+            # Calculate proportional duration within maha dasa
+            proportional_duration = (bhukti_duration / sum(bhukti_durations.values())) * maha_dasa_duration
+            
+            if remaining_duration <= 0:
+                break
+                
+            if proportional_duration > remaining_duration:
+                proportional_duration = remaining_duration
+            
+            end_date = current_date + datetime.timedelta(days=proportional_duration * 365.25)
+            
+            bhukti_table.append({
+                "maha_dasa": maha_dasa_planet,
+                "bhukti": bhukti_planet,
+                "start_date": current_date.strftime("%Y-%m-%d"),
+                "end_date": end_date.strftime("%Y-%m-%d"),
+                "duration": round(proportional_duration, 2)
+            })
+            
+            current_date = end_date
+            remaining_duration -= proportional_duration
+    
+    return bhukti_table
+
 # --- GPT INTERPRETATION ---
 def ask_gpt_dasa_prediction(birth_info, dasa_table, planet_data):
     """
