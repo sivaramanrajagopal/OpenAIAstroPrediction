@@ -127,7 +127,7 @@ def generate_dasa_table(jd, moon_longitude, total_years=120):
                 "end_age": round(end_age, 2),
                 "start_date": start_date.strftime("%Y-%m-%d"),
                 "end_date": end_date.strftime("%Y-%m-%d"),
-                "duration": round(duration, 2)
+                "years": round(duration, 2)
             })
 
             current_age = end_age

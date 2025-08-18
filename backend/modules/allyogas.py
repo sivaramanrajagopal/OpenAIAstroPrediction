@@ -61,6 +61,38 @@ def get_yogas_planet_positions(dob, tob, lat, lon, tz_offset):
     results['Ascendant'] = get_chart_info(ascmc[0])
     return results
 
+def get_planet_positions(jd, lat, lon):
+    """
+    Get planetary positions for Yogas calculations.
+    Returns: (data, asc_deg, cusps)
+    """
+    # Set up Swiss Ephemeris
+    swe.set_ephe_path('.')
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    
+    # Calculate Ascendant
+    cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O')
+    asc_deg = ascmc[0]
+    
+    # Get basic planetary data (simplified for Yogas calculations)
+    data = {}
+    planets = {
+        'Sun': swe.SUN, 'Moon': swe.MOON, 'Mars': swe.MARS, 'Mercury': swe.MERCURY,
+        'Jupiter': swe.JUPITER, 'Venus': swe.VENUS, 'Saturn': swe.SATURN,
+        'Rahu': swe.MEAN_NODE, 'Ketu': swe.MEAN_NODE
+    }
+    
+    for name, planet_id in planets.items():
+        if name == 'Ketu':
+            # Ketu is 180° opposite to Rahu
+            rahu_pos = data['Rahu']['longitude']
+            data[name] = {'longitude': (rahu_pos + 180) % 360}
+        else:
+            result = swe.calc_ut(jd, planet_id, swe.FLG_SIDEREAL)
+            data[name] = {'longitude': result[0][0]}
+    
+    return data, asc_deg, cusps
+
 def get_lagna_houses(asc_index):
     return [(asc_index + i) % 12 + 1 for i in range(12)]
 

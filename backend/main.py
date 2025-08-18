@@ -317,11 +317,11 @@ def dasa(dob: str, tob: str, lat: float, lon: float, tz_offset: float = 5.5):
         age = current_year - birth_year
         
         dasa_timeline = [
-            {"planet": "Sun", "start_age": max(0, age-10), "end_age": age+6, "duration": 6},
-            {"planet": "Moon", "start_age": age+6, "end_age": age+16, "duration": 10},
-            {"planet": "Mars", "start_age": age+16, "end_age": age+23, "duration": 7},
-            {"planet": "Rahu", "start_age": age+23, "end_age": age+41, "duration": 18},
-            {"planet": "Jupiter", "start_age": age+41, "end_age": age+57, "duration": 16}
+            {"planet": "Sun", "start_age": max(0, age-10), "end_age": age+6, "years": 6},
+            {"planet": "Moon", "start_age": age+6, "end_age": age+16, "years": 10},
+            {"planet": "Mars", "start_age": age+16, "end_age": age+23, "years": 7},
+            {"planet": "Rahu", "start_age": age+23, "end_age": age+41, "years": 18},
+            {"planet": "Jupiter", "start_age": age+41, "end_age": age+57, "years": 16}
         ]
         
         return {"dasa_timeline": [dasa_timeline]}
