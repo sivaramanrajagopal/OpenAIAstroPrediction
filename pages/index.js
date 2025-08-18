@@ -407,10 +407,9 @@ export default function Home() {
         setLifePurpose(lifePurposeRes.interpretation || "Life purpose analysis in progress..."); // Backend returns 'interpretation'
         setDasaBhukti(dasaBhuktiRes.table || []); // Backend returns 'table'
         setSpouseAnalysis({
-          ...spouseRes.spouse_analysis,
           report: spouseRes.report,
           interpretation: spouseRes.interpretation
-        } || { gender: "Processing...", lagna: "Processing..." });
+        } || { report: "Processing...", interpretation: "Processing..." });
         setInduDasa(induDasaRes || { indu_lagnam: "Processing..." });
         
       } else {
@@ -1499,18 +1498,6 @@ export default function Home() {
                     }}>
                       {spouseAnalysis && Object.keys(spouseAnalysis).length > 0 ? (
                         <div>
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                            gap: '16px',
-                            marginBottom: '20px'
-                          }}>
-                            <div><strong>Gender:</strong> {spouseAnalysis.gender}</div>
-                            <div><strong>Lagna:</strong> {spouseAnalysis.lagna}</div>
-                            <div><strong>7th House:</strong> {spouseAnalysis['7th_house_sign']}</div>
-                            <div><strong>7th Lord:</strong> {spouseAnalysis['7th_lord']}</div>
-                            <div><strong>Direction:</strong> {spouseAnalysis.spouse_direction}</div>
-                          </div>
                           {spouseAnalysis.report && (
                             <div style={{
                               color: '#374151',
