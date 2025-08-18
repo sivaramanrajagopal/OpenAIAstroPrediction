@@ -5,7 +5,12 @@ from openai import OpenAI
 import os
 
 # --- Load OpenAI API Key ---
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Only create client when needed, not at import time
+def get_openai_client():
+    api_key = os.getenv("OPENAI_API_KEY")
+    if api_key:
+        return OpenAI(api_key=api_key)
+    return None
 
 # --- CONSTANTS ---
 nakshatras = [
@@ -205,13 +210,17 @@ def ask_gpt_dasa_prediction(birth_info, dasa_table, planet_data):
     2. Career, health, relationships during each Dasa.
     3. Spiritual guidance and remedies.
     """
-    try:
-        response = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-            max_tokens=1500
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"GPT Error: {str(e)}"
+    client = get_openai_client()
+    if client:
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=1500
+            )
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            return f"GPT Error: {str(e)}"
+    else:
+        return "OpenAI API key not set."
