@@ -650,14 +650,14 @@ export default function Home() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: locationDetected ? '2px solid #10b981' : '2px solid #e5e7eb',
+                  border: '2px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '16px',
                   transition: 'border-color 0.3s',
-                  background: locationDetected ? '#f0fdf4' : 'white'
+                  background: 'white'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                onBlur={(e) => e.target.style.borderColor = locationDetected ? '#10b981' : '#e5e7eb'}
+                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
 
@@ -674,14 +674,14 @@ export default function Home() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: locationDetected ? '2px solid #10b981' : '2px solid #e5e7eb',
+                  border: '2px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '16px',
                   transition: 'border-color 0.3s',
-                  background: locationDetected ? '#f0fdf4' : 'white'
+                  background: 'white'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                onBlur={(e) => e.target.style.borderColor = locationDetected ? '#10b981' : '#e5e7eb'}
+                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
             
@@ -698,14 +698,14 @@ export default function Home() {
                 style={{
                   width: '100%',
                   padding: '12px',
-                  border: locationDetected ? '2px solid #10b981' : '2px solid #e5e7eb',
+                  border: '2px solid #e5e7eb',
                   borderRadius: '8px',
                   fontSize: '16px',
                   transition: 'border-color 0.3s',
-                  background: locationDetected ? '#f0fdf4' : 'white'
+                  background: 'white'
                 }}
                 onFocus={(e) => e.target.style.borderColor = '#667eea'}
-                onBlur={(e) => e.target.style.borderColor = locationDetected ? '#10b981' : '#e5e7eb'}
+                onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
               />
             </div>
             
