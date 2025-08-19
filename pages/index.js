@@ -405,6 +405,17 @@ export default function Home() {
           padding: '40px',
           textAlign: 'center'
         }}>
+          {/* Sacred Mantra */}
+          <div style={{
+            fontSize: '1.2em',
+            marginBottom: '15px',
+            fontWeight: '600',
+            color: '#fbbf24',
+            textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+          }}>
+            ॐ महा गणपतये नमः
+          </div>
+          
           <div style={{fontSize: '4em', marginBottom: '10px'}}>🔮</div>
           <h1 style={{fontSize: '2.5em', margin: '0 0 10px 0', fontWeight: 'bold'}}>
             Vedic Astrology AI
@@ -412,6 +423,65 @@ export default function Home() {
           <p style={{fontSize: '1.2em', opacity: 0.9, margin: 0}}>
             Discover Your Cosmic Blueprint with AI-Powered Insights
           </p>
+        </div>
+
+        {/* Disclaimer and Developer Credit */}
+        <div style={{
+          padding: '20px',
+          background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+          borderTop: '1px solid #fecaca',
+          borderBottom: '1px solid #fecaca'
+        }}>
+          {/* Disclaimer */}
+          <div style={{
+            marginBottom: '15px',
+            padding: '15px',
+            background: 'white',
+            borderRadius: '8px',
+            border: '1px solid #fecaca'
+          }}>
+            <h4 style={{
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: '#dc2626',
+              margin: '0 0 8px 0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}>
+              ⚠️ Important Disclaimer
+            </h4>
+            <p style={{
+              fontSize: '14px',
+              color: '#7f1d1d',
+              margin: '0',
+              lineHeight: '1.5'
+            }}>
+              This application is provided for <strong>educational and entertainment purposes only</strong>. 
+              The astrological readings and interpretations are generated using AI technology and should not 
+              be considered as professional astrological advice. For important life decisions, please consult 
+              with a qualified professional astrologer. The developers are not responsible for any decisions 
+              made based on the information provided by this application.
+            </p>
+          </div>
+          
+          {/* Developer Credit */}
+          <div style={{
+            textAlign: 'center',
+            padding: '10px',
+            background: 'white',
+            borderRadius: '8px',
+            border: '1px solid #dbeafe'
+          }}>
+            <p style={{
+              fontSize: '14px',
+              color: '#1e40af',
+              margin: '0',
+              fontWeight: '500'
+            }}>
+              App developed by <strong>Sivaraman Rajagopal</strong>
+            </p>
+          </div>
         </div>
 
         {/* Form */}
@@ -1764,6 +1834,32 @@ export default function Home() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Footer Disclaimer */}
+      <div style={{
+        marginTop: '30px',
+        padding: '20px',
+        background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
+        borderRadius: '12px',
+        border: '1px solid #fecaca',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontSize: '13px',
+          color: '#7f1d1d',
+          lineHeight: '1.5',
+          maxWidth: '800px',
+          margin: '0 auto'
+        }}>
+          <p style={{margin: '0 0 8px 0'}}>
+            <strong>Disclaimer:</strong> This application is for educational purposes only. 
+            Consult a professional astrologer for important life decisions.
+          </p>
+          <p style={{margin: '0', fontSize: '12px', opacity: '0.8'}}>
+            Developed with ❤️ by Sivaraman Rajagopal
+          </p>
+        </div>
       </div>
 
       <style jsx>{`
