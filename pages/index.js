@@ -101,9 +101,111 @@ export default function Home() {
     gender: 'Male'
   });
   
+  const [showLocationSearch, setShowLocationSearch] = useState(false);
+  const [citySearchTerm, setCitySearchTerm] = useState('');
+  const [citySuggestions, setCitySuggestions] = useState([]);
 
+  // City search functions
+  const searchCity = async (query) => {
+    try {
+      const response = await fetch(
+        `/api/google-places?query=${encodeURIComponent(query)}`
+      );
+      const data = await response.json();
+      
+      if (response.ok) {
+        return data.suggestions || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('City search failed:', error);
+      return [];
+    }
+  };
   
-
+  const getPlaceDetails = async (placeId) => {
+    try {
+      const response = await fetch(
+        `/api/google-geocode?placeId=${placeId}`
+      );
+      const data = await response.json();
+      
+      if (response.ok && data.result && data.result.geometry) {
+        const location = data.result.geometry.location;
+        return {
+          lat: location.lat,
+          lng: location.lng,
+          formatted_address: data.result.formatted_address
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Place details failed:', error);
+      return null;
+    }
+  };
+  
+  const getTimezone = async (lat, lon, timestamp = null) => {
+    try {
+      const ts = timestamp || Math.floor(Date.now() / 1000);
+      const response = await fetch(
+        `/api/google-timezone?lat=${lat}&lng=${lon}&timestamp=${ts}`
+      );
+      const data = await response.json();
+      
+      if (response.ok) {
+        return {
+          timezone_id: data.timezone_id,
+          timezone_name: data.timezone_name,
+          raw_offset: data.raw_offset,
+          dst_offset: data.dst_offset,
+          total_offset: data.total_offset
+        };
+      }
+      return null;
+    } catch (error) {
+      console.error('Timezone API failed:', error);
+      return null;
+    }
+  };
+  
+  const handleCitySearch = async (value) => {
+    setCitySearchTerm(value);
+    if (value.length > 2) {
+      const suggestions = await searchCity(value);
+      setCitySuggestions(suggestions);
+    } else {
+      setCitySuggestions([]);
+    }
+  };
+  
+  const selectCity = async (suggestion) => {
+    const placeDetails = await getPlaceDetails(suggestion.place_id);
+    
+    if (placeDetails) {
+      // Update coordinates
+      setFormData(prev => ({
+        ...prev,
+        lat: placeDetails.lat.toString(),
+        lon: placeDetails.lng.toString()
+      }));
+      
+      // Get timezone for selected location
+      const timezoneData = await getTimezone(placeDetails.lat, placeDetails.lng);
+      
+      if (timezoneData) {
+        const totalOffset = timezoneData.total_offset || (timezoneData.raw_offset + timezoneData.dst_offset);
+        setFormData(prev => ({
+          ...prev,
+          tz_offset: totalOffset.toString()
+        }));
+      }
+    }
+    
+    setCitySearchTerm(suggestion.description);
+    setCitySuggestions([]);
+    setShowLocationSearch(false);
+  };
 
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -586,6 +688,115 @@ export default function Home() {
                 You can find your birth location's coordinates by searching on Google Maps. 
                 Right-click on your birth location and the coordinates will appear in the popup.
               </p>
+            </div>
+
+            {/* City Search Section */}
+            <div style={{
+              marginTop: '20px',
+              padding: '20px',
+              background: '#f8fafc',
+              borderRadius: '12px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <h3 style={{
+                fontSize: '1.1rem',
+                fontWeight: '600',
+                color: '#374151',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <MapPin size={18} color="#667eea" />
+                Search for Your Birth Location
+              </h3>
+              
+              <div style={{
+                display: 'flex',
+                gap: '12px',
+                marginBottom: '16px',
+                flexWrap: 'wrap'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => setShowLocationSearch(!showLocationSearch)}
+                  style={{
+                    padding: '10px 16px',
+                    background: showLocationSearch ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #6366f1, #4f46e5)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.3s'
+                  }}
+                >
+                  🔍 {showLocationSearch ? 'Hide' : 'Search'} City
+                </button>
+              </div>
+              
+              {showLocationSearch && (
+                <div style={{ position: 'relative', marginBottom: '16px' }}>
+                  <input
+                    type="text"
+                    placeholder="Search city (e.g., Chennai, New York, London)"
+                    value={citySearchTerm}
+                    onChange={(e) => handleCitySearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '12px 16px',
+                      border: '2px solid #e5e7eb',
+                      borderRadius: '8px',
+                      fontSize: '16px',
+                      transition: 'border-color 0.3s'
+                    }}
+                    onFocus={(e) => e.target.style.borderColor = '#667eea'}
+                    onBlur={(e) => e.target.style.borderColor = '#e5e7eb'}
+                  />
+                  
+                  {citySuggestions.length > 0 && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      right: 0,
+                      background: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      maxHeight: '200px',
+                      overflowY: 'auto',
+                      zIndex: 1000,
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                    }}>
+                      {citySuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          onClick={() => selectCity(suggestion)}
+                          style={{
+                            padding: '12px 16px',
+                            cursor: 'pointer',
+                            borderBottom: index < citySuggestions.length - 1 ? '1px solid #f3f4f6' : 'none',
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#f3f4f6'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                        >
+                          <div style={{ fontWeight: '500', color: '#374151' }}>
+                            {suggestion.main_text || suggestion.description.split(',')[0]}
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                            {suggestion.description}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           
