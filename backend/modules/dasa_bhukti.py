@@ -67,21 +67,14 @@ def get_planet_positions(jd, lat, lon):
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-    # True Rahu & Ketu
-    rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
-    results['Rahu (True)'] = get_chart_info(rahu[0], rahu[3])
+    # Rahu & Ketu - Use MEAN_NODE as per Parasara principles
+    # Mean nodes are traditional in Vedic astrology
+    rahu = swe.calc_ut(jd, swe.MEAN_NODE, FLAGS)[0]
+    results['Rahu'] = get_chart_info(rahu[0], rahu[3])
     ketu_lon = (rahu[0] + 180.0) % 360.0
     ketu_info = get_chart_info(ketu_lon, rahu[3])
     ketu_info['retrograde'] = True
-    results['Ketu (True)'] = ketu_info
-
-    # Mean Rahu & Ketu
-    mean_rahu = swe.calc_ut(jd, swe.MEAN_NODE, FLAGS)[0]
-    results['Rahu (Mean)'] = get_chart_info(mean_rahu[0], mean_rahu[3])
-    mean_ketu_lon = (mean_rahu[0] + 180.0) % 360.0
-    mean_ketu_info = get_chart_info(mean_ketu_lon, mean_rahu[3])
-    mean_ketu_info['retrograde'] = True
-    results['Ketu (Mean)'] = mean_ketu_info
+    results['Ketu'] = ketu_info
 
     cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])
@@ -147,11 +140,11 @@ def generate_dasa_bhukti_table(jd, moon_longitude):
     """Generate Dasa Bhukti table with sub-periods."""
     # First get the main dasa periods
     main_dasa_table = generate_dasa_table(jd, moon_longitude, total_years=120)
-    
+
     # For each main dasa, calculate bhukti (sub-periods)
     bhukti_table = []
-    
-    for main_period in main_dasa_table[:5]:  # Show first 5 main periods
+
+    for main_period in main_dasa_table:  # Show ALL main periods (was [:5])
         maha_dasa_planet = main_period['planet']
         maha_dasa_duration = main_period['duration']
         

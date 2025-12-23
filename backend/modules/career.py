@@ -90,7 +90,8 @@ def get_planet_positions(jd, lat, lon):
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-    rahu = swe.calc_ut(jd, swe.TRUE_NODE, FLAGS)[0]
+    # Rahu & Ketu - Use MEAN_NODE as per Parasara principles
+    rahu = swe.calc_ut(jd, swe.MEAN_NODE, FLAGS)[0]
     results['Rahu'] = get_chart_info(rahu[0], rahu[3])
     ketu_lon = (rahu[0] + 180.0) % 360.0
     ketu_info = get_chart_info(ketu_lon, rahu[3])

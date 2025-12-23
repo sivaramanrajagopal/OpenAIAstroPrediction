@@ -48,14 +48,14 @@ def get_yogas_planet_positions(dob, tob, lat, lon, tz_offset):
         lonlat = swe.calc_ut(jd, pid, FLAGS)[0]
         results[name] = get_chart_info(lonlat[0], lonlat[3])
 
-    for node_type, base_name in [(swe.TRUE_NODE, 'True'), (swe.MEAN_NODE, 'Mean')]:
-        rahu = swe.calc_ut(jd, node_type, FLAGS)[0]
-        rahu_info = get_chart_info(rahu[0], rahu[3])
-        results[f'Rahu ({base_name})'] = rahu_info
-        ketu_lon = (rahu[0] + 180.0) % 360.0
-        ketu_info = get_chart_info(ketu_lon, rahu[3])
-        ketu_info['retrograde'] = True
-        results[f'Ketu ({base_name})'] = ketu_info
+    # Rahu & Ketu - Use MEAN_NODE as per Parasara principles
+    rahu = swe.calc_ut(jd, swe.MEAN_NODE, FLAGS)[0]
+    rahu_info = get_chart_info(rahu[0], rahu[3])
+    results['Rahu'] = rahu_info
+    ketu_lon = (rahu[0] + 180.0) % 360.0
+    ketu_info = get_chart_info(ketu_lon, rahu[3])
+    ketu_info['retrograde'] = True
+    results['Ketu'] = ketu_info
 
     cusps, ascmc = swe.houses_ex(jd, lat, lon, b'O', flags=FLAGS)
     results['Ascendant'] = get_chart_info(ascmc[0])

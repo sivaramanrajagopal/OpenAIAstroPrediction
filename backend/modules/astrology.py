@@ -166,16 +166,16 @@ def calculate_planetary_positions_global(date_of_birth, time_of_birth, latitude,
             pada = results[planet_name]['pada']
             print(f"🌙 Moon: {lonlat[0]:.4f}°, Pada {pada} - Expected: ~354.14°, Pada 3")
     
-    # Rahu & Ketu - exactly as working reference
-    for node_type, base_name in [(swe.TRUE_NODE, 'True'), (swe.MEAN_NODE, 'Mean')]:
-        rahu = swe.calc_ut(jd, node_type, FLAGS)[0]
-        rahu_info = get_chart_info(rahu[0], rahu[3])
-        results[f'Rahu ({base_name})'] = rahu_info
-        
-        ketu_lon = (rahu[0] + 180.0) % 360.0
-        ketu_info = get_chart_info(ketu_lon, rahu[3])
-        ketu_info['retrograde'] = True
-        results[f'Ketu ({base_name})'] = ketu_info
+    # Rahu & Ketu - Use MEAN_NODE as per Parasara principles
+    # Mean nodes are traditional in Vedic astrology
+    rahu = swe.calc_ut(jd, swe.MEAN_NODE, FLAGS)[0]
+    rahu_info = get_chart_info(rahu[0], rahu[3])
+    results['Rahu'] = rahu_info
+
+    ketu_lon = (rahu[0] + 180.0) % 360.0
+    ketu_info = get_chart_info(ketu_lon, rahu[3])
+    ketu_info['retrograde'] = True
+    results['Ketu'] = ketu_info
     
     # Ascendant calculation - exactly as working reference
     cusps, ascmc = swe.houses_ex(jd, latitude, longitude, b'O', flags=FLAGS)
