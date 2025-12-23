@@ -91,6 +91,33 @@ const DollarSign = ({ size = 16, color = "currentColor" }) => (
   </svg>
 );
 
+const ChevronDown = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} fill="none" stroke={color} viewBox="0 0 24 24" strokeWidth="2" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <polyline points="6 9 12 15 18 9"/>
+  </svg>
+);
+
+const ChevronUp = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} fill="none" stroke={color} viewBox="0 0 24 24" strokeWidth="2" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <polyline points="18 15 12 9 6 15"/>
+  </svg>
+);
+
+const PlusCircle = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} fill="none" stroke={color} viewBox="0 0 24 24" strokeWidth="2" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="12" y1="8" x2="12" y2="16"/>
+    <line x1="8" y1="12" x2="16" y2="12"/>
+  </svg>
+);
+
+const MinusCircle = ({ size = 16, color = "currentColor" }) => (
+  <svg width={size} height={size} fill="none" stroke={color} viewBox="0 0 24 24" strokeWidth="2" style={{ display: 'inline-block', verticalAlign: 'middle' }}>
+    <circle cx="12" cy="12" r="10"/>
+    <line x1="8" y1="12" x2="16" y2="12"/>
+  </svg>
+);
+
 export default function Home() {
   const [formData, setFormData] = useState({
     dob: '',
@@ -1556,13 +1583,18 @@ export default function Home() {
                                 alignItems: 'center',
                                 gap: '12px'
                               }}>
-                                <span style={{
-                                  fontSize: '1.5rem',
-                                  fontWeight: 'bold',
-                                  color: 'white'
+                                <div style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  width: '32px',
+                                  height: '32px'
                                 }}>
-                                  {expandedDasas[mahaDasa] ? '−' : '+'}
-                                </span>
+                                  {expandedDasas[mahaDasa] ?
+                                    <MinusCircle size={28} color="white" /> :
+                                    <PlusCircle size={28} color="white" />
+                                  }
+                                </div>
                                 <div>
                                   <div style={{
                                     fontSize: '1.1rem',
