@@ -387,7 +387,7 @@ export default function Home() {
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-      padding: '20px',
+      padding: 'var(--container-padding)',
       fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif'
     }}>
       <div style={{
@@ -402,7 +402,7 @@ export default function Home() {
         <div style={{
           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
           color: 'white',
-          padding: '40px',
+          padding: 'var(--header-padding)',
           textAlign: 'center'
         }}>
           {/* Sacred Mantra */}
@@ -416,18 +416,18 @@ export default function Home() {
             ॐ महा गणपतये नमः
           </div>
           
-          <div style={{fontSize: '4em', marginBottom: '10px'}}>🔮</div>
-          <h1 style={{fontSize: '2.5em', margin: '0 0 10px 0', fontWeight: 'bold'}}>
+          <div style={{fontSize: 'var(--emoji-size)', marginBottom: '10px'}}>🔮</div>
+          <h1 style={{fontSize: 'var(--title-size)', margin: '0 0 10px 0', fontWeight: 'bold'}}>
             Vedic Astrology AI
           </h1>
-          <p style={{fontSize: '1.2em', opacity: 0.9, margin: 0}}>
+          <p style={{fontSize: 'var(--subtitle-size)', opacity: 0.9, margin: 0}}>
             Discover Your Cosmic Blueprint with AI-Powered Insights
           </p>
         </div>
 
         {/* Disclaimer and Developer Credit */}
         <div style={{
-          padding: '20px',
+          padding: 'var(--section-padding)',
           background: 'linear-gradient(135deg, #fef2f2, #fee2e2)',
           borderTop: '1px solid #fecaca',
           borderBottom: '1px solid #fecaca'
@@ -485,11 +485,11 @@ export default function Home() {
         </div>
 
         {/* Form */}
-        <div style={{padding: '20px'}}>
+        <div style={{padding: 'var(--section-padding)'}}>
           {/* User Education Section */}
           <div style={{
             marginBottom: '24px',
-            padding: '20px',
+            padding: 'var(--section-padding)',
             background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
             borderRadius: '12px',
             border: '1px solid #f59e0b'
@@ -522,7 +522,7 @@ export default function Home() {
           {/* Birth Details Form */}
           <div style={{
             marginBottom: '24px',
-            padding: '20px',
+            padding: 'var(--section-padding)',
             background: '#f8fafc',
             borderRadius: '12px',
             border: '1px solid #e2e8f0'
@@ -933,13 +933,13 @@ export default function Home() {
         {/* Results */}
         {results && (
           <div style={{
-            padding: '0 40px 40px',
+            padding: '0 var(--section-padding) var(--section-padding)',
             borderTop: '1px solid #e5e7eb'
           }}>
             <div style={{
               background: '#f8fafc',
               borderRadius: '16px',
-              padding: '30px',
+              padding: 'var(--inner-padding)',
               marginBottom: '30px'
             }}>
               <h2 style={{
@@ -1046,7 +1046,7 @@ export default function Home() {
                       <Sun size={18} color="#f59e0b" />
                       Planetary Positions
                     </h3>
-                    <div style={{ overflowX: 'auto' }}>
+                    <div className="table-responsive">
                       <table style={{
                         width: '100%',
                         borderCollapse: 'collapse',
@@ -1298,7 +1298,7 @@ export default function Home() {
                       Vimshottari Dasa Timeline
                     </h3>
                     {dasa && dasa.length > 0 ? (
-                      <div style={{ overflowX: 'auto' }}>
+                      <div className="table-responsive">
                         <table style={{
                           width: '100%',
                           borderCollapse: 'collapse',
@@ -1478,7 +1478,7 @@ export default function Home() {
                       Dasa Bhukti Periods
                     </h3>
                     {dasaBhukti && dasaBhukti.length > 0 ? (
-                      <div style={{ overflowX: 'auto' }}>
+                      <div className="table-responsive">
                         <table style={{
                           width: '100%',
                           borderCollapse: 'collapse',

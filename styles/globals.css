@@ -19,3 +19,71 @@ a {
 * {
   box-sizing: border-box;
 }
+
+/* Mobile Responsiveness Utilities */
+:root {
+  --header-padding: 40px;
+  --container-padding: 20px;
+  --section-padding: 20px;
+  --inner-padding: 30px;
+  --emoji-size: 4em;
+  --title-size: 2.5em;
+  --subtitle-size: 1.2em;
+}
+
+/* Tablet breakpoint */
+@media (max-width: 768px) {
+  :root {
+    --header-padding: 24px;
+    --container-padding: 16px;
+    --section-padding: 16px;
+    --inner-padding: 20px;
+    --emoji-size: 3em;
+    --title-size: 2em;
+    --subtitle-size: 1.1em;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 480px) {
+  :root {
+    --header-padding: 20px;
+    --container-padding: 12px;
+    --section-padding: 12px;
+    --inner-padding: 16px;
+    --emoji-size: 2.5em;
+    --title-size: 1.75em;
+    --subtitle-size: 1em;
+  }
+}
+
+/* Very small mobile devices */
+@media (max-width: 375px) {
+  :root {
+    --header-padding: 16px;
+    --container-padding: 10px;
+    --section-padding: 10px;
+    --inner-padding: 12px;
+    --emoji-size: 2em;
+    --title-size: 1.5em;
+    --subtitle-size: 0.95em;
+  }
+}
+
+/* Utility classes for responsive tables */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+@media (max-width: 768px) {
+  .table-responsive table {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .table-responsive table {
+    font-size: 12px;
+  }
+}
