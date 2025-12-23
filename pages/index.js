@@ -218,6 +218,35 @@ export default function Home() {
   const [dasaBhukti, setDasaBhukti] = useState(null);
   const [spouseAnalysis, setSpouseAnalysis] = useState(null);
   const [induDasa, setInduDasa] = useState(null);
+  const [expandedDasas, setExpandedDasas] = useState({});
+
+  // Helper function to calculate current age from DOB
+  const calculateCurrentAge = (dob) => {
+    if (!dob) return null;
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  // Helper function to check if current age falls within a dasa period
+  const isCurrentDasa = (startAge, endAge) => {
+    const currentAge = calculateCurrentAge(formData.dob);
+    if (currentAge === null) return false;
+    return currentAge >= parseFloat(startAge) && currentAge < parseFloat(endAge);
+  };
+
+  // Toggle dasa expansion
+  const toggleDasaExpansion = (dasaName) => {
+    setExpandedDasas(prev => ({
+      ...prev,
+      [dasaName]: !prev[dasaName]
+    }));
+  };
 
   // Backend URL - environment variable with Railway fallback
   const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 
@@ -1348,37 +1377,46 @@ export default function Home() {
                             </tr>
                           </thead>
                           <tbody>
-                            {dasa.map((period, index) => (
-                              <tr key={index} style={{
-                                transition: 'background-color 0.2s ease'
-                              }}>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem',
-                                  fontWeight: '600'
-                                }}>{period.planet}</td>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem'
-                                }}>{period.start_age}</td>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem'
-                                }}>{period.end_age}</td>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem'
-                                }}>{period.years !== undefined && period.years !== null ? period.years : 'N/A'}</td>
-                              </tr>
-                            ))}
+                            {dasa.map((period, index) => {
+                              const isCurrent = isCurrentDasa(period.start_age, period.end_age);
+                              return (
+                                <tr key={index} style={{
+                                  transition: 'background-color 0.2s ease',
+                                  backgroundColor: isCurrent ? '#d1fae5' : 'transparent'
+                                }}>
+                                  <td style={{
+                                    padding: '12px 16px',
+                                    borderBottom: '1px solid #f1f5f9',
+                                    color: isCurrent ? '#065f46' : '#4b5563',
+                                    fontSize: '0.9rem',
+                                    fontWeight: isCurrent ? '700' : '600'
+                                  }}>
+                                    {period.planet} {isCurrent && '🔆'}
+                                  </td>
+                                  <td style={{
+                                    padding: '12px 16px',
+                                    borderBottom: '1px solid #f1f5f9',
+                                    color: isCurrent ? '#065f46' : '#4b5563',
+                                    fontSize: '0.9rem',
+                                    fontWeight: isCurrent ? '600' : '400'
+                                  }}>{period.start_age}</td>
+                                  <td style={{
+                                    padding: '12px 16px',
+                                    borderBottom: '1px solid #f1f5f9',
+                                    color: isCurrent ? '#065f46' : '#4b5563',
+                                    fontSize: '0.9rem',
+                                    fontWeight: isCurrent ? '600' : '400'
+                                  }}>{period.end_age}</td>
+                                  <td style={{
+                                    padding: '12px 16px',
+                                    borderBottom: '1px solid #f1f5f9',
+                                    color: isCurrent ? '#065f46' : '#4b5563',
+                                    fontSize: '0.9rem',
+                                    fontWeight: isCurrent ? '600' : '400'
+                                  }}>{period.years !== undefined && period.years !== null ? period.years : 'N/A'}</td>
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -1478,91 +1516,166 @@ export default function Home() {
                       Dasa Bhukti Periods
                     </h3>
                     {dasaBhukti && dasaBhukti.length > 0 ? (
-                      <div className="table-responsive">
-                        <table style={{
-                          width: '100%',
-                          borderCollapse: 'collapse',
-                          background: 'white',
-                          borderRadius: '12px',
-                          overflow: 'hidden',
-                          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
-                        }}>
-                          <thead>
-                            <tr>
-                              <th style={{
-                                background: '#f1f5f9',
-                                fontWeight: '600',
-                                color: '#374151',
-                                padding: '12px 16px',
-                                textAlign: 'left',
-                                borderBottom: '1px solid #e2e8f0',
-                                fontSize: '0.9rem'
-                              }}>Period</th>
-                              <th style={{
-                                background: '#f1f5f9',
-                                fontWeight: '600',
-                                color: '#374151',
-                                padding: '12px 16px',
-                                textAlign: 'left',
-                                borderBottom: '1px solid #e2e8f0',
-                                fontSize: '0.9rem'
-                              }}>Start</th>
-                              <th style={{
-                                background: '#f1f5f9',
-                                fontWeight: '600',
-                                color: '#374151',
-                                padding: '12px 16px',
-                                textAlign: 'left',
-                                borderBottom: '1px solid #e2e8f0',
-                                fontSize: '0.9rem'
-                              }}>End</th>
-                              <th style={{
-                                background: '#f1f5f9',
-                                fontWeight: '600',
-                                color: '#374151',
-                                padding: '12px 16px',
-                                textAlign: 'left',
-                                borderBottom: '1px solid #e2e8f0',
-                                fontSize: '0.9rem'
-                              }}>Duration</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {dasaBhukti.map((period, index) => (
-                              <tr key={index} style={{
-                                transition: 'background-color 0.2s ease'
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {/* Group dasaBhukti by maha_dasa */}
+                        {Object.entries(
+                          dasaBhukti.reduce((acc, period) => {
+                            if (!acc[period.maha_dasa]) {
+                              acc[period.maha_dasa] = [];
+                            }
+                            acc[period.maha_dasa].push(period);
+                            return acc;
+                          }, {})
+                        ).map(([mahaDasa, periods]) => (
+                          <div key={mahaDasa} style={{
+                            background: 'white',
+                            borderRadius: '12px',
+                            overflow: 'hidden',
+                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                            border: '1px solid #e2e8f0'
+                          }}>
+                            {/* Maha Dasa Header - Clickable */}
+                            <div
+                              onClick={() => toggleDasaExpansion(mahaDasa)}
+                              style={{
+                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                color: 'white',
+                                padding: '16px 20px',
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                cursor: 'pointer',
+                                userSelect: 'none',
+                                transition: 'all 0.3s ease'
+                              }}
+                              onMouseEnter={(e) => e.currentTarget.style.opacity = '0.9'}
+                              onMouseLeave={(e) => e.currentTarget.style.opacity = '1'}
+                            >
+                              <div style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px'
                               }}>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem',
-                                  fontWeight: '600'
+                                <span style={{
+                                  fontSize: '1.5rem',
+                                  fontWeight: 'bold',
+                                  color: 'white'
                                 }}>
-                                  {period.maha_dasa} - {period.bhukti}
-                                </td>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem'
-                                }}>{period.start_date}</td>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem'
-                                }}>{period.end_date}</td>
-                                <td style={{
-                                  padding: '12px 16px',
-                                  borderBottom: '1px solid #f1f5f9',
-                                  color: '#4b5563',
-                                  fontSize: '0.9rem'
-                                }}>{period.duration !== undefined && period.duration !== null ? `${period.duration} years` : 'N/A'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                                  {expandedDasas[mahaDasa] ? '−' : '+'}
+                                </span>
+                                <div>
+                                  <div style={{
+                                    fontSize: '1.1rem',
+                                    fontWeight: '600'
+                                  }}>
+                                    {mahaDasa} Maha Dasa
+                                  </div>
+                                  <div style={{
+                                    fontSize: '0.85rem',
+                                    opacity: 0.9
+                                  }}>
+                                    {periods.length} sub-periods
+                                  </div>
+                                </div>
+                              </div>
+                              <div style={{
+                                fontSize: '0.85rem',
+                                opacity: 0.9
+                              }}>
+                                {expandedDasas[mahaDasa] ? 'Click to collapse' : 'Click to expand'}
+                              </div>
+                            </div>
+
+                            {/* Bhukti Periods - Expandable */}
+                            {expandedDasas[mahaDasa] && (
+                              <div style={{ padding: '0' }}>
+                                <table style={{
+                                  width: '100%',
+                                  borderCollapse: 'collapse'
+                                }}>
+                                  <thead>
+                                    <tr>
+                                      <th style={{
+                                        background: '#f8fafc',
+                                        fontWeight: '600',
+                                        color: '#374151',
+                                        padding: '12px 16px',
+                                        textAlign: 'left',
+                                        borderBottom: '2px solid #e2e8f0',
+                                        fontSize: '0.85rem'
+                                      }}>Bhukti Planet</th>
+                                      <th style={{
+                                        background: '#f8fafc',
+                                        fontWeight: '600',
+                                        color: '#374151',
+                                        padding: '12px 16px',
+                                        textAlign: 'left',
+                                        borderBottom: '2px solid #e2e8f0',
+                                        fontSize: '0.85rem'
+                                      }}>Start Date</th>
+                                      <th style={{
+                                        background: '#f8fafc',
+                                        fontWeight: '600',
+                                        color: '#374151',
+                                        padding: '12px 16px',
+                                        textAlign: 'left',
+                                        borderBottom: '2px solid #e2e8f0',
+                                        fontSize: '0.85rem'
+                                      }}>End Date</th>
+                                      <th style={{
+                                        background: '#f8fafc',
+                                        fontWeight: '600',
+                                        color: '#374151',
+                                        padding: '12px 16px',
+                                        textAlign: 'left',
+                                        borderBottom: '2px solid #e2e8f0',
+                                        fontSize: '0.85rem'
+                                      }}>Duration</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {periods.map((period, index) => (
+                                      <tr key={index} style={{
+                                        transition: 'background-color 0.2s ease'
+                                      }}
+                                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8fafc'}
+                                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                                      >
+                                        <td style={{
+                                          padding: '12px 16px',
+                                          borderBottom: '1px solid #f1f5f9',
+                                          color: '#4b5563',
+                                          fontSize: '0.9rem',
+                                          fontWeight: '600'
+                                        }}>
+                                          {period.bhukti}
+                                        </td>
+                                        <td style={{
+                                          padding: '12px 16px',
+                                          borderBottom: '1px solid #f1f5f9',
+                                          color: '#4b5563',
+                                          fontSize: '0.9rem'
+                                        }}>{period.start_date}</td>
+                                        <td style={{
+                                          padding: '12px 16px',
+                                          borderBottom: '1px solid #f1f5f9',
+                                          color: '#4b5563',
+                                          fontSize: '0.9rem'
+                                        }}>{period.end_date}</td>
+                                        <td style={{
+                                          padding: '12px 16px',
+                                          borderBottom: '1px solid #f1f5f9',
+                                          color: '#4b5563',
+                                          fontSize: '0.9rem'
+                                        }}>{period.duration !== undefined && period.duration !== null ? `${period.duration} years` : 'N/A'}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            )}
+                          </div>
+                        ))}
                       </div>
                     ) : (
                       <p style={{color: '#64748b'}}>Loading Dasa Bhukti periods...</p>
