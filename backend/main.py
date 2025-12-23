@@ -206,8 +206,8 @@ def health_check():
     return {
         "status": "healthy",
         "timestamp": datetime.datetime.now().isoformat(),
-        "version": "2.0.0-WORKING-REPO",
-        "message": "Vedic Astrology API with Working Repository Calculations!",
+        "version": "2.1.0-PARASARA-COMPLIANT",
+        "message": "Vedic Astrology API - Parasara Mean Nodes & Complete Dasa-Bhukti",
         "swiss_ephemeris": SWISSEPH_AVAILABLE,
         "astrology_modules": MODULES_AVAILABLE,
         "astrology_engine": "AstrologyResearchDatabase-Compatible",
