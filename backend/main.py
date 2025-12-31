@@ -212,7 +212,9 @@ def health_check():
         "astrology_modules": MODULES_AVAILABLE,
         "astrology_engine": "AstrologyResearchDatabase-Compatible",
         "moon_test_longitude": "Should be ~354.14° (not 353.26°)",
-        "moon_test_pada": "Should be pada 3 (not pada 2)"
+        "moon_test_pada": "Should be pada 3 (not pada 2)",
+        "rahu_ketu": "Mean nodes (Parasara compliant)",
+        "dasa_bhukti": "Complete 120-year cycle with all sub-periods"
     }
 
 @app.get("/")
