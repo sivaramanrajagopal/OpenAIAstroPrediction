@@ -221,9 +221,10 @@ def health_check():
 def root():
     return {
         "message": "🔮 Vedic Astrology API",
-        "status": "online", 
-        "version": "2.4-DEBUG-MOON-CALCULATION",
-        "deployment_time": "2025-01-10T03:15:00Z",
+        "status": "online",
+        "version": "2.1.0-PARASARA-COMPLIANT",
+        "deployment_time": datetime.datetime.now().isoformat(),
+        "deployment_trigger": "Railway reconfiguration - Root directory set",
         "frontend": "https://aiastroprediction.vercel.app",
         "capabilities": {
             "swiss_ephemeris": "✅ Available" if SWISSEPH_AVAILABLE else "❌ Not Available",
